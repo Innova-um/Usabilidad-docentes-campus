@@ -154,7 +154,53 @@ tbody tr:hover td{background:var(--brand-50)}
 #tip .tr i{width:8px;height:8px;border-radius:2px;display:inline-block}
 @media (prefers-reduced-motion:no-preference){ .br i{transition:width .35s ease} }
 .kpi .pair[style*="--n:3"] .pv .val{font-size:21px}
-@media (max-width:560px){ .pv .val{font-size:20px} .kpi .pair[style*="--n:3"] .pv .val{font-size:17px} .seg button{padding:6px 9px} }
+/* Grid items must be allowed to shrink below their content width */
+.panel,.kpi{grid-template-columns:minmax(0,1fr)}
+.grid2>*,.kpis>*{min-width:0}
+.bars,.grp{grid-template-columns:minmax(0,1fr)}
+.grp .gl,.br{min-width:0}
+.swipe{display:none;font-size:12px;color:var(--muted)}
+
+/* Tablets */
+@media (max-width:1024px){
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .head{align-items:flex-start}
+}
+/* Phones and small tablets */
+@media (max-width:760px){
+  body{padding-block:12px 32px}
+  .wrap{gap:14px}
+  .head{padding:18px 16px 16px;border-radius:12px;gap:14px}
+  .eyebrow{font-size:11px}
+  .lede{font-size:13px}
+  .periods{width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px}
+  .period{padding:7px 10px}
+  .filters{position:static;padding-block:0}
+  .frow{gap:8px}
+  .frow .field,.field.fixed{flex:1 1 100%}
+  .seg{display:flex;width:100%}
+  .seg button{flex:1;padding:9px 8px}
+  .reset{width:100%}
+  select,input[type=search],.dd summary{font-size:16px;min-height:44px}
+  .opt{padding:12px 10px}
+  .kpis{grid-template-columns:minmax(0,1fr);gap:10px}
+  .kpi{padding:14px}
+  .panel{padding:14px;gap:12px}
+  .ph{flex-direction:column;align-items:stretch}
+  .ph h2{font-size:16px}
+  .grp{padding:6px 4px}
+  .stlist{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .swipe{display:block}
+  table{min-width:760px}
+  .pager{justify-content:center;text-align:center}
+  .pager button{padding:9px 16px}
+}
+@media (max-width:420px){
+  .pv .val{font-size:20px}
+  .kpi .pair[style*="--n:3"] .pv .val{font-size:17px}
+  .kpi .pair[style*="--n:3"]{gap:6px}
+  .stlist{grid-template-columns:minmax(0,1fr)}
+}
 </style>
 
 <div class="wrap">
@@ -227,6 +273,7 @@ tbody tr:hover td{background:var(--brand-50)}
         <button type="button" id="vDoc" aria-pressed="false">Por docente</button>
       </div>
     </div>
+    <p class="swipe">Desliza la tabla hacia los lados para ver todas las columnas →</p>
     <div class="tblwrap"><table id="tbl"><thead></thead><tbody></tbody></table></div>
     <div class="pager"><span id="pgInfo"></span><span style="display:flex;gap:6px"><button type="button" id="pgPrev">Anterior</button><button type="button" id="pgNext">Siguiente</button></span></div>
   </section>
@@ -376,7 +423,7 @@ function bars(el, groups, f, rawF){
     const d = sh.length>1 ? delta(g.raw[sh.at(-2)], sh.at(-2), g.raw[sh.at(-1)], sh.at(-1)) : null;
     return `<div class="grp${g.onClick?' click':''}" data-i="${i}" ${g.onClick?'tabindex="0" role="button"':''}>
       <div class="gl"><span class="n" title="${esc(g.name)}">${esc(g.name)}</span>${d?`<span class="d">${chip(d,true)}</span>`:''}</div>
-      ${sh.map(p=>{ const v = val(g.raw[p], p); return `<div class="br"><i style="width:${v? v/max*100 : 0}%;background:${v?col(p):'var(--grid)'}"></i><em class="num">${f(v)}</em></div>`; }).join('')}
+      ${sh.map(p=>{ const v = val(g.raw[p], p); return `<div class="br"><i style="width:calc((100% - 84px) * ${v? (v/max).toFixed(4) : 0});background:${v?col(p):'var(--grid)'}"></i><em class="num">${f(v)}</em></div>`; }).join('')}
     </div>`;
   }).join('');
   el.querySelectorAll('.grp').forEach(n=>{
