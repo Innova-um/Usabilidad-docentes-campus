@@ -10,11 +10,15 @@
   --page:#F2F5F9; --surface:#FFFFFF; --surface-2:#F6F9FC;
   --ink:#0E2238; --ink-2:#4A5A6E; --muted:#7A8799;
   --grid:#E3E9F0; --line:#CFD8E3; --ring:rgba(0,41,75,.10);
-  --p1:#004A87; --p2:#00A50B; --both:#D17900; --none:#C9D3DE;
+  /* Un color fijo por periodo (en orden cronológico) */
+  --c0:#004A87; --c1:#00A50B; --c2:#D17900; --none:#C9D3DE;
+  /* Constancia de docentes (violeta, distinto de los periodos) */
+  --s3:#4B2E83; --s2:#8A6CC2; --s1:#C9B8E8;
   --up:#1E7A34; --down:#B3261E; --chip-up:#E4F3E8; --chip-down:#FBE8E6; --chip-flat:#EBEFF4;
   --focus:#D17900;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{background:var(--page);color:var(--ink);font:14px/1.5 "Instrument Sans",system-ui,"Segoe UI",sans-serif;padding-inline:16px;padding-block:24px 48px}
 .wrap{max-width:1240px;margin:0 auto;display:grid;gap:20px}
 h1,h2,h3{margin:0;text-wrap:balance;font-family:"Montserrat","Instrument Sans",system-ui,sans-serif}
@@ -32,7 +36,6 @@ h1{font-weight:700;font-size:clamp(26px,3.8vw,38px);line-height:1.1;letter-spaci
 .periods{display:flex;flex-wrap:wrap;gap:10px}
 .period{display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22);border-radius:10px;padding:9px 13px}
 .sw{width:12px;height:12px;border-radius:3px;flex:none}
-.sw.p1{background:var(--p1)} .sw.p2{background:var(--p2)} .sw.both{background:var(--both)} .sw.none{background:var(--none)}
 .head .sw{box-shadow:0 0 0 2px #fff}
 .period b{display:block;font-size:13px}
 .period span{font-size:12px;color:rgba(255,255,255,.8)}
@@ -58,7 +61,10 @@ select:disabled{opacity:.55}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
 .kpi{background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:16px;display:grid;gap:10px;align-content:start}
 .kpi h3{font-size:13px;font-weight:700;color:var(--brand-700)}
-.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pair{display:grid;grid-template-columns:repeat(var(--n,2),minmax(0,1fr));gap:8px}
+.vs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:4px}
+.vs small{font-size:10.5px;color:var(--muted)}
+.field.fixed{flex:none}
 .pv{display:grid;gap:2px}
 .pv .lab{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
 .pv .val{font-size:26px;font-weight:700;color:var(--brand-900);line-height:1.1;letter-spacing:-.01em}
@@ -88,7 +94,6 @@ select:disabled{opacity:.55}
 .grp .gl .d{flex:none;font-size:12px}
 .br{display:flex;align-items:center;gap:8px;height:12px}
 .br i{display:block;height:10px;border-radius:0 4px 4px 0;min-width:2px}
-.br i.p1{background:var(--p1)} .br i.p2{background:var(--p2)}
 .br i.zero{background:var(--grid);width:2px}
 .br em{font-style:normal;font-size:11.5px;color:var(--ink-2);white-space:nowrap}
 .hint{font-size:12px;color:var(--muted)}
@@ -96,7 +101,6 @@ select:disabled{opacity:.55}
 /* Status stack */
 .stack{display:flex;height:26px;gap:2px;border-radius:6px;overflow:hidden}
 .stack div{height:100%;min-width:2px}
-.stack .both{background:var(--both)} .stack .p1{background:var(--p1)} .stack .p2{background:var(--p2)} .stack .none{background:var(--none)}
 .stlist{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
 .st{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;align-items:center}
 .st .sw{grid-row:span 2}
@@ -133,7 +137,8 @@ tbody tr:hover td{background:var(--brand-50)}
 #tip .tr{display:flex;align-items:center;gap:6px}
 #tip .tr i{width:8px;height:8px;border-radius:2px;display:inline-block}
 @media (prefers-reduced-motion:no-preference){ .br i{transition:width .35s ease} }
-@media (max-width:560px){ .pv .val{font-size:22px} .seg button{padding:6px 9px} }
+.kpi .pair[style*="--n:3"] .pv .val{font-size:21px}
+@media (max-width:560px){ .pv .val{font-size:20px} .kpi .pair[style*="--n:3"] .pv .val{font-size:17px} .seg button{padding:6px 9px} }
 </style>
 
 <div class="wrap">
@@ -148,13 +153,26 @@ tbody tr:hover td{background:var(--brand-50)}
 
   <section class="filters" aria-label="Filtros">
     <div class="frow">
+      <div class="field fixed"><label>Periodos</label>
+        <div class="seg" role="group" aria-label="Qué periodos ver">
+          <button type="button" data-cmp="all" aria-pressed="true">Los 3 periodos</button>
+          <button type="button" data-cmp="two" aria-pressed="false">Comparar dos</button>
+          <button type="button" data-cmp="one" aria-pressed="false">Un periodo</button>
+        </div>
+      </div>
+      <div class="field" id="wA" hidden><label for="pA" id="lA">Periodo</label><select id="pA"></select></div>
+      <div class="field" id="wB" hidden><label for="pB">Comparar con</label><select id="pB"></select></div>
+      <div class="field fixed"><label>Medida</label>
+        <div class="seg" role="group" aria-label="Forma de medir">
+          <button type="button" id="mTot" aria-pressed="false">Total del periodo</button>
+          <button type="button" id="mDia" aria-pressed="true">Promedio por día</button>
+        </div>
+      </div>
+    </div>
+    <div class="frow">
       <div class="field"><label for="fFac">Facultad</label><select id="fFac"></select></div>
       <div class="field"><label for="fProg">Programa</label><select id="fProg"></select></div>
       <div class="field"><label for="fQ">Buscar docente o curso</label><input id="fQ" type="search" placeholder="Nombre, usuario o código del curso" autocomplete="off"></div>
-      <div class="seg" role="group" aria-label="Forma de comparar">
-        <button type="button" id="mTot" aria-pressed="false">Total del periodo</button>
-        <button type="button" id="mDia" aria-pressed="true">Promedio por día</button>
-      </div>
       <button type="button" class="reset" id="reset">Limpiar filtros</button>
     </div>
     <nav class="crumbs" id="crumbs" aria-label="Nivel actual"></nav>
@@ -166,23 +184,23 @@ tbody tr:hover td{background:var(--brand-50)}
     <div class="panel">
       <div class="ph">
         <div><h2 id="tTime">Tiempo de uso docente</h2><p id="sTime"></p></div>
-        <div class="legend"><span><i class="sw p1"></i>7–20 sep</span><span><i class="sw p2"></i>21–24 sep</span></div>
+        <div class="legend lg"></div>
       </div>
       <div class="bars" id="cTime"></div>
     </div>
     <div class="panel">
       <div class="ph">
-        <div><h2 id="tAct">Actividades creadas</h2><p id="sAct"></p></div>
-        <div class="legend"><span><i class="sw p1"></i>7–20 sep</span><span><i class="sw p2"></i>21–24 sep</span></div>
+        <div><h2>Recursos y actividades creados</h2><p id="sAct"></p></div>
+        <div class="legend lg"></div>
       </div>
       <div class="bars" id="cType"></div>
-      <div class="bars" id="cActGrp"></div>
+      <div id="cActGrp"></div>
     </div>
   </section>
 
   <section class="panel">
     <div class="ph">
-      <div><h2>¿Quiénes trabajaron en cada periodo?</h2><p>Docentes según si registraron tiempo en el aula virtual en uno, ambos o ningún periodo.</p></div>
+      <div><h2>¿Quiénes trabajaron en cada periodo?</h2><p id="sStat"></p></div>
     </div>
     <div class="stack" id="stack" role="img"></div>
     <div class="stlist" id="stlist"></div>
@@ -203,9 +221,9 @@ tbody tr:hover td{background:var(--brand-50)}
   <aside class="note">
     <b>Cómo leer este tablero</b>
     <ul>
-      <li><b>Los periodos no tienen la misma duración.</b> Por eso la variación (↑ ↓) siempre compara el <b>ritmo diario</b>. Con “Total del periodo” las barras muestran los valores acumulados.</li>
+      <li><b>Variación (↑ ↓):</b> siempre compara el <b>ritmo diario</b> de un periodo con el anterior de los que estás viendo, para que los periodos de distinta duración se puedan comparar.</li>
       <li><b>Tiempo de uso:</b> es una estimación a partir de los clics en Moodle. Se suma el tiempo entre clics consecutivos y se descartan las pausas de más de 30 minutos.</li>
-      <li><b>Actividades creadas:</b> recursos y actividades agregados al curso en cada periodo. Los contenidos totales incluyen tareas, cuestionarios y foros. Se cuentan por curso, no por docente.</li>
+      <li><b>Recursos creados:</b> recursos y actividades agregados al curso en cada periodo. Los contenidos totales incluyen tareas, cuestionarios y foros. Se cuentan por curso, no por docente.</li>
       <li id="cutNote"></li>
     </ul>
   </aside>
@@ -214,25 +232,45 @@ tbody tr:hover td{background:var(--brand-50)}
 
 <script>
 const D = /*__DATA__*/null;
-const d1 = D.p.d1, d2 = D.p.d2;
+const P = D.p, NP = P.length;
 const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
 const fmt = (n, dec=0) => Number(n).toLocaleString('es-CO', {minimumFractionDigits:dec, maximumFractionDigits:dec});
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const hm = m => { m = Math.round(m); const h = Math.floor(m/60), r = m%60; return h ? `${fmt(h)} h ${String(r).padStart(2,'0')} m` : `${r} min`; };
 const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const col = p => `var(--c${p})`;
+const sw = p => `<i class="sw" style="background:${col(p)}"></i>`;
 
-// Precompute search keys
 const TK = D.teachers.map(t => norm(t[0]+' '+t[1]));
 const CK = D.courses.map(c => norm(c[0]+' '+c[1]));
 const facs = [...new Set(D.cats.map(c => c[0]))].sort((a,b)=>a.localeCompare(b,'es'));
 
-const S = { fac:'', prog:'', q:'', mode:'dia', view:'cur', sort:{cur:['m1',-1], doc:['m1',-1]}, page:0 };
+const S = { fac:'', prog:'', q:'', mode:'dia', cmp:'all', a:NP-2, b:NP-1, view:'cur', sort:{cur:['m'+(NP-1),-1], doc:['m'+(NP-1),-1]}, page:0 };
+const shown = () => S.cmp==='all' ? P.map((_,i)=>i) : S.cmp==='one' ? [S.a] : [S.a, S.b];
 
-// Header periods
-$('#periods').innerHTML = `
-  <div class="period"><i class="sw p1"></i><div><b>Periodo 1 · 7–20 sep</b><span>${d1} días completos</span></div></div>
-  <div class="period"><i class="sw p2"></i><div><b>Periodo 2 · 21–24 sep</b><span>${fmt(d2,1)} días (corte ${esc(D.p.cut)})</span></div></div>`;
-$('#cutNote').innerHTML = `<b>Periodo 2 en curso:</b> el informe se generó el ${esc(D.p.cut)}, así que cubre ${fmt(d2,1)} días. El ritmo diario se calcula con esa duración.`;
+// Header and notes
+$('#periods').innerHTML = P.map((p,i)=>`<div class="period">${sw(i)}<div><b>${esc(p.label)}</b><span>${fmt(p.days,1).replace(',0','')} días · ${esc(p.note)}</span></div></div>`).join('');
+const partial = P.filter(p=>p.note.startsWith('corte'));
+$('#cutNote').innerHTML = partial.length ? partial.map(p=>`<b>El periodo ${esc(p.label)} está incompleto:</b> el informe tiene ${esc(p.note)}, así que cubre ${fmt(p.days,1)} días. Su ritmo diario se calcula con esa duración.`).join(' ') : '';
+if(!partial.length) $('#cutNote').hidden = true;
+
+// Period controls
+const opts = (sel, skip) => P.map((p,i)=> i===skip ? '' : `<option value="${i}"${i===sel?' selected':''}>${esc(p.label)}</option>`).join('');
+function syncPeriodUI(){
+  $$('[data-cmp]').forEach(b=>b.setAttribute('aria-pressed', b.dataset.cmp===S.cmp));
+  $('#wA').hidden = S.cmp==='all'; $('#wB').hidden = S.cmp!=='two';
+  $('#lA').textContent = S.cmp==='two' ? 'Periodo base' : 'Periodo';
+  if(S.cmp==='two' && S.a===S.b) S.b = S.a===NP-1 ? NP-2 : NP-1;
+  $('#pA').innerHTML = opts(S.a, -1);
+  $('#pB').innerHTML = opts(S.b, S.a);
+  const sh = shown();
+  $$('.lg').forEach(el => el.innerHTML = sh.map(p=>`<span>${sw(p)}${esc(P[p].label)}</span>`).join(''));
+}
+$$('[data-cmp]').forEach(b => b.onclick = ()=>{ S.cmp = b.dataset.cmp; fixSort(); syncPeriodUI(); render(); });
+$('#pA').onchange = e => { S.a = +e.target.value; fixSort(); syncPeriodUI(); render(); };
+$('#pB').onchange = e => { S.b = +e.target.value; fixSort(); syncPeriodUI(); render(); };
+function fixSort(){ const last = shown().at(-1); for(const v of ['cur','doc']){ const k = S.sort[v][0]; const m = k.match(/^[ma](\d)$/); if(m && !shown().includes(+m[1])) S.sort[v] = ['m'+last, -1]; } }
 
 // Filters
 function fillFac(){ $('#fFac').innerHTML = '<option value="">Todas las facultades</option>' + facs.map(f=>`<option>${esc(f)}</option>`).join(''); $('#fFac').value = S.fac; }
@@ -263,7 +301,7 @@ function showTip(e, html){ tip.innerHTML = html; tip.hidden = false; moveTip(e);
 function moveTip(e){ const r = tip.getBoundingClientRect(); let x = e.clientX+14, y = e.clientY+14; if(x+r.width > innerWidth-8) x = e.clientX-r.width-14; if(y+r.height > innerHeight-8) y = e.clientY-r.height-14; tip.style.left = Math.max(8,x)+'px'; tip.style.top = Math.max(8,y)+'px'; }
 function hideTip(){ tip.hidden = true; }
 
-// Data filtering
+// Data
 let F = null;
 function filtered(){
   const rows = [];
@@ -277,188 +315,185 @@ function filtered(){
   return rows;
 }
 function agg(rows){
-  const o = {m1:0,m2:0,t:new Set(),t1:new Set(),t2:new Set(),c:new Set(),c1:new Set(),c2:new Set(),a1:[0,0,0,0],a2:[0,0,0,0]};
+  const o = { m:Array(NP).fill(0), t:new Set(), c:new Set(), tp:P.map(()=>new Set()), cp:P.map(()=>new Set()), a:P.map(()=>[0,0,0,0]) };
   for(const r of rows){
-    o.m1+=r[2]; o.m2+=r[3]; o.t.add(r[0]); o.c.add(r[1]);
-    if(r[2]>0){o.t1.add(r[0]); o.c1.add(r[1]);}
-    if(r[3]>0){o.t2.add(r[0]); o.c2.add(r[1]);}
+    o.t.add(r[0]); o.c.add(r[1]);
+    for(let p=0;p<NP;p++){ o.m[p]+=r[2][p]; if(r[2][p]>0){ o.tp[p].add(r[0]); o.cp[p].add(r[1]); } }
   }
-  for(const ci of o.c){ const c = D.courses[ci]; for(let i=0;i<4;i++){ o.a1[i]+=c[3+i]; o.a2[i]+=c[7+i]; } }
+  for(const ci of o.c){ const c = D.courses[ci]; for(let p=0;p<NP;p++) for(let i=0;i<4;i++) o.a[p][i]+=c[3+p][i]; }
   return o;
 }
-function delta(v1, v2){ // compares daily rate
-  const r1 = v1/d1, r2 = v2/d2;
-  if(r1===0 && r2===0) return {cls:'flat', txt:'Sin actividad', pct:null};
-  if(r1===0) return {cls:'up', txt:'Nuevo', pct:Infinity};
+// Change in daily rate from period pa (value va) to period pb (value vb)
+function delta(va, pa, vb, pb){
+  const r1 = va/P[pa].days, r2 = vb/P[pb].days;
+  if(r1===0 && r2===0) return {cls:'flat', txt:'Sin actividad', short:'—', pct:null};
+  if(r1===0) return {cls:'up', txt:'Nuevo', short:'Nuevo', pct:Infinity};
   const p = (r2-r1)/r1*100;
-  if(Math.abs(p) < 1) return {cls:'flat', txt:'= Igual ritmo', pct:0};
-  return {cls: p>0?'up':'down', txt:`${p>0?'↑':'↓'} ${fmt(Math.abs(p))} % ritmo diario`, pct:p};
+  if(Math.abs(p) < 1) return {cls:'flat', txt:'= Igual ritmo', short:'=', pct:0};
+  const s = `${p>0?'↑':'↓'} ${fmt(Math.abs(p))} %`;
+  return {cls: p>0?'up':'down', txt:`${s} ritmo diario`, short:s, pct:p};
 }
-const val = (v, per) => S.mode==='dia' ? v/per : v;
+const val = (v, p) => S.mode==='dia' ? v/P[p].days : v;
+const chip = (d, small) => `<span class="chip ${d.cls}"${small?' style="padding:1px 7px;font-size:11px"':''}>${small?d.short:d.txt}</span>`;
+const vsTxt = (sh, k) => `vs ${P[sh[k-1]].label}`;
 
 // KPIs
 function renderKPIs(o){
-  const tt = o.t.size, tc = o.c.size;
-  const dT = delta(o.m1, o.m2);
-  const act1 = o.a1[0], act2 = o.a2[0], dA = delta(act1, act2);
-  const pT1 = tt? o.t1.size/tt*100:0, pT2 = tt? o.t2.size/tt*100:0;
-  const pC1 = tc? o.c1.size/tc*100:0, pC2 = tc? o.c2.size/tc*100:0;
-  const avg1 = o.t1.size? o.m1/o.t1.size/d1:0, avg2 = o.t2.size? o.m2/o.t2.size/d2:0, dAvg = delta(avg1*d1, avg2*d2);
-  const pp = (a,b)=>{ const d=b-a; const cls = Math.abs(d)<0.5?'flat':(d>0?'up':'down'); return `<span class="chip ${cls}">${Math.abs(d)<0.5?'= Sin cambio':(d>0?'↑ ':'↓ ')+(Math.abs(d)<0.5?'':fmt(Math.abs(d),1)+' pts')}</span>`; };
-  const pv = (cls, lab, v, sub) => `<div class="pv"><span class="lab"><i class="sw ${cls}"></i>${lab}</span><span class="val num">${v}</span><span class="sub">${sub}</span></div>`;
-  $('#kpis').innerHTML = `
-    <article class="kpi"><h3>Tiempo de uso docente</h3>
-      <div class="pair">${pv('p1','7–20 sep', fmt(o.m1/60)+' h', fmt(o.m1/60/d1,1)+' h por día')}${pv('p2','21–24 sep', fmt(o.m2/60)+' h', fmt(o.m2/60/d2,1)+' h por día')}</div>
-      <div class="foot"><span class="chip ${dT.cls}">${dT.txt}</span></div></article>
-    <article class="kpi"><h3>Minutos al día por docente activo</h3>
-      <div class="pair">${pv('p1','7–20 sep', fmt(avg1,1), 'min/día · '+fmt(o.t1.size)+' docentes')}${pv('p2','21–24 sep', fmt(avg2,1), 'min/día · '+fmt(o.t2.size)+' docentes')}</div>
-      <div class="foot"><span class="chip ${dAvg.cls}">${dAvg.txt}</span></div></article>
-    <article class="kpi"><h3>Docentes con actividad</h3>
-      <div class="pair">${pv('p1','7–20 sep', fmt(pT1,1)+' %', fmt(o.t1.size)+' de '+fmt(tt))}${pv('p2','21–24 sep', fmt(pT2,1)+' %', fmt(o.t2.size)+' de '+fmt(tt))}</div>
-      <div class="foot">${pp(pT1,pT2)}<span>Cursos con docente activo: ${fmt(pC1,1)} % → ${fmt(pC2,1)} %</span></div></article>
-    <article class="kpi"><h3>Recursos y actividades creados</h3>
-      <div class="pair">${pv('p1','7–20 sep', fmt(act1), fmt(act1/d1,1)+' por día')}${pv('p2','21–24 sep', fmt(act2), fmt(act2/d2,1)+' por día')}</div>
-      <div class="foot"><span class="chip ${dA.cls}">${dA.txt}</span></div></article>`;
+  const sh = shown(), tt = o.t.size;
+  const pv = (p, v, sub, d) => `<div class="pv"><span class="lab">${sw(p)}${esc(P[p].label)}</span><span class="val num">${v}</span><span class="sub">${sub}</span>${d||''}</div>`;
+  const dd = (k, va, vb) => k ? `<span class="vs">${chip(delta(va, sh[k-1], vb, sh[k]), true)} <small>${esc(vsTxt(sh,k))}</small></span>` : '';
+  const pp = (k, a, b) => { if(!k) return ''; const d=b-a; const cls = Math.abs(d)<0.5?'flat':(d>0?'up':'down'); return `<span class="vs"><span class="chip ${cls}" style="padding:1px 7px;font-size:11px">${cls==='flat'?'=':(d>0?'↑ ':'↓ ')+fmt(Math.abs(d),1)+' pts'}</span> <small>${esc(vsTxt(sh,k))}</small></span>`; };
+  const pct = p => tt ? o.tp[p].size/tt*100 : 0;
+  const avg = p => o.tp[p].size ? o.m[p]/o.tp[p].size/P[p].days : 0;
+  const tile = (title, cells) => `<article class="kpi"><h3>${title}</h3><div class="pair" style="--n:${sh.length}">${cells}</div></article>`;
+  $('#kpis').innerHTML =
+    tile('Tiempo de uso docente', sh.map((p,k)=>pv(p, fmt(o.m[p]/60)+' h', fmt(o.m[p]/60/P[p].days,1)+' h por día', dd(k, o.m[sh[k-1]]??0, o.m[p]))).join('')) +
+    tile('Minutos al día por docente activo', sh.map((p,k)=>pv(p, fmt(avg(p),1), 'min/día · '+fmt(o.tp[p].size)+' docentes', dd(k, (avg(sh[k-1]??p))*P[sh[k-1]??p].days, avg(p)*P[p].days))).join('')) +
+    tile('Docentes con actividad', sh.map((p,k)=>pv(p, fmt(pct(p),1)+' %', fmt(o.tp[p].size)+' de '+fmt(tt), pp(k, pct(sh[k-1]??p), pct(p)))).join('')) +
+    tile('Recursos y actividades creados', sh.map((p,k)=>pv(p, fmt(o.a[p][0]), fmt(o.a[p][0]/P[p].days,1)+' por día', dd(k, o.a[sh[k-1]]?.[0]??0, o.a[p][0]))).join(''));
 }
 
-// Grouped bars
-function bars(el, groups, opts){
-  // groups: [{name, v1, v2, detail, onClick, tip}]
-  const max = Math.max(1, ...groups.map(g=>Math.max(g.v1,g.v2)));
+// Grouped bars: g = {name, raw:[per period], extra, onClick}
+function bars(el, groups, f, rawF){
+  const sh = shown();
   if(!groups.length){ el.innerHTML = '<p class="hint">No hay datos con los filtros actuales.</p>'; return; }
+  const max = Math.max(1, ...groups.flatMap(g => sh.map(p => val(g.raw[p], p))));
   el.innerHTML = groups.map((g,i)=>{
-    const w1 = g.v1/max*100, w2 = g.v2/max*100;
-    const d = delta(g.r1 ?? g.v1, g.r2 ?? g.v2);
-    return `<div class="grp${g.onClick?' click':''}" data-i="${i}" ${g.onClick?'tabindex="0" role="button"':''} aria-label="${esc(g.name)}: ${esc(opts.f(g.v1))} frente a ${esc(opts.f(g.v2))}">
-      <div class="gl"><span class="n" title="${esc(g.name)}">${esc(g.name)}</span><span class="d"><span class="chip ${d.cls}" style="padding:1px 7px;font-size:11px">${d.txt.replace(' ritmo diario','')}</span></span></div>
-      <div class="br"><i class="${g.v1?'p1':'zero'}" style="width:${g.v1?w1:0}%"></i><em class="num">${opts.f(g.v1)}</em></div>
-      <div class="br"><i class="${g.v2?'p2':'zero'}" style="width:${g.v2?w2:0}%"></i><em class="num">${opts.f(g.v2)}</em></div>
+    const d = sh.length>1 ? delta(g.raw[sh.at(-2)], sh.at(-2), g.raw[sh.at(-1)], sh.at(-1)) : null;
+    return `<div class="grp${g.onClick?' click':''}" data-i="${i}" ${g.onClick?'tabindex="0" role="button"':''}>
+      <div class="gl"><span class="n" title="${esc(g.name)}">${esc(g.name)}</span>${d?`<span class="d">${chip(d,true)}</span>`:''}</div>
+      ${sh.map(p=>{ const v = val(g.raw[p], p); return `<div class="br"><i style="width:${v? v/max*100 : 0}%;background:${v?col(p):'var(--grid)'}"></i><em class="num">${f(v)}</em></div>`; }).join('')}
     </div>`;
-  }).join('') + (opts.hint?`<p class="hint">${opts.hint}</p>`:'');
+  }).join('');
   el.querySelectorAll('.grp').forEach(n=>{
     const g = groups[+n.dataset.i];
-    n.onmouseenter = e => showTip(e, `<b>${esc(g.name)}</b><div class="tr"><i style="background:var(--p1)"></i>7–20 sep: ${esc(opts.tf(g.v1, g, 1))}</div><div class="tr"><i style="background:var(--p2)"></i>21–24 sep: ${esc(opts.tf(g.v2, g, 2))}</div>${g.extra?`<div style="opacity:.8;margin-top:4px">${g.extra}</div>`:''}`);
+    n.onmouseenter = e => showTip(e, `<b>${esc(g.name)}</b>${sh.map(p=>`<div class="tr"><i style="background:${col(p)}"></i>${esc(P[p].label)}: ${esc(f(val(g.raw[p],p)))} (${esc(rawF(g.raw[p]))} en total)</div>`).join('')}${g.extra?`<div style="opacity:.8;margin-top:4px">${g.extra}</div>`:''}`);
     n.onmousemove = moveTip; n.onmouseleave = hideTip;
     if(g.onClick){ n.onclick = ()=>{hideTip(); g.onClick();}; n.onkeydown = e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault(); g.onClick();} }; }
   });
 }
-
-function groupBy(rows, keyFn){
-  const m = new Map();
-  for(const r of rows){ const k = keyFn(r); if(!m.has(k)) m.set(k, []); m.get(k).push(r); }
-  return m;
-}
+function groupBy(rows, keyFn){ const m = new Map(); for(const r of rows){ const k = keyFn(r); if(!m.has(k)) m.set(k, []); m.get(k).push(r); } return m; }
 
 function renderCharts(rows){
+  const sh = shown();
   const lvl = !S.fac ? 'fac' : (!S.prog ? 'prog' : 'cur');
   const lvlName = {fac:'facultad', prog:'programa', cur:'curso'}[lvl];
   const key = lvl==='fac' ? r=>D.cats[D.courses[r[1]][2]][0] : lvl==='prog' ? r=>D.cats[D.courses[r[1]][2]][1] : r=>r[1];
-  const G = groupBy(rows, key);
-  const unitT = S.mode==='dia' ? 'h/día' : 'h';
+  const G = [...groupBy(rows, key)].map(([k, rs]) => ({k, o:agg(rs), name: lvl==='cur' ? D.courses[k][1] : k,
+    onClick: lvl==='fac' ? ()=>setFac(k) : lvl==='prog' ? ()=>setProg(k) : null }));
+  const sum = (g, arr) => sh.reduce((s,p)=>s+val(arr[p],p),0);
   const fT = v => S.mode==='dia' ? fmt(v/60,1)+' h/día' : fmt(v/60)+' h';
-  let tg = [...G].map(([k, rs])=>{
-    const o = agg(rs);
-    const name = lvl==='cur' ? D.courses[k][1] : k;
-    return { name, r1:o.m1, r2:o.m2, v1:val(o.m1,d1), v2:val(o.m2,d2), o,
-      extra: `${fmt(o.t.size)} docentes · ${fmt(o.c.size)} cursos`,
-      onClick: lvl==='fac' ? ()=>setFac(k) : lvl==='prog' ? ()=>setProg(k) : null };
-  }).sort((a,b)=> (b.v1+b.v2)-(a.v1+a.v2));
+  let tg = G.map(g=>({ name:g.name, raw:g.o.m, onClick:g.onClick, extra:`${fmt(g.o.t.size)} docentes · ${fmt(g.o.c.size)} cursos` }))
+            .sort((a,b)=> sum(b,b.raw)-sum(a,a.raw));
   const more = lvl==='cur' && tg.length>12 ? tg.length-12 : 0;
   if(lvl==='cur') tg = tg.slice(0,12);
+  const vsNote = sh.length>1 ? ` La etiqueta compara ${P[sh.at(-1)].label} con ${P[sh.at(-2)].label}.` : '';
   $('#tTime').textContent = `Tiempo de uso docente por ${lvlName}`;
-  $('#sTime').textContent = (S.mode==='dia'?'Horas por día':'Horas acumuladas') + ` que los docentes dedicaron al aula virtual.` + (lvl!=='cur' ? ` Haz clic en una ${lvlName} para ver su detalle.` : ' Los 12 cursos con más tiempo.');
-  bars($('#cTime'), tg, { f:fT, tf:(v,g,p)=> `${fT(v)} (${hm(p===1?g.r1:g.r2)} en total)`, hint: more?`y ${fmt(more)} cursos más en la tabla de detalle.`:'' });
+  $('#sTime').textContent = (S.mode==='dia'?'Horas por día':'Horas acumuladas') + ' que los docentes dedicaron al aula virtual.' + (lvl!=='cur' ? ` Haz clic en una ${lvlName} para ver su detalle.` : ' Los 12 cursos con más tiempo.') + vsNote;
+  bars($('#cTime'), tg, fT, v=>hm(v));
+  if(more){ $('#cTime').insertAdjacentHTML('beforeend', `<p class="hint">y ${fmt(more)} cursos más en la tabla de detalle.</p>`); }
 
-  // Activity by type
   const o = agg(rows);
-  const types = ['Contenidos (todos)','Tareas','Cuestionarios','Foros'];
   const fA = v => S.mode==='dia' ? fmt(v,1)+'/día' : fmt(v);
-  bars($('#cType'), types.map((t,i)=>({ name:t, r1:o.a1[i], r2:o.a2[i], v1:val(o.a1[i],d1), v2:val(o.a2[i],d2) })),
-    { f:fA, tf:(v,g,p)=> `${fA(v)} (${fmt(p===1?g.r1:g.r2)} en total)` });
-  // Activity by group
-  let ag = [...G].map(([k, rs])=>{
-    const a = agg(rs);
-    return { name: lvl==='cur' ? D.courses[k][1] : k, r1:a.a1[0], r2:a.a2[0], v1:val(a.a1[0],d1), v2:val(a.a2[0],d2),
-      extra:`Tareas ${fmt(a.a1[1])} → ${fmt(a.a2[1])} · Cuestionarios ${fmt(a.a1[2])} → ${fmt(a.a2[2])} · Foros ${fmt(a.a1[3])} → ${fmt(a.a2[3])}`,
-      onClick: lvl==='fac' ? ()=>setFac(k) : lvl==='prog' ? ()=>setProg(k) : null };
-  }).filter(g=>g.r1||g.r2).sort((a,b)=>(b.v1+b.v2)-(a.v1+a.v2));
+  bars($('#cType'), ['Contenidos (todos)','Tareas','Cuestionarios','Foros'].map((t,i)=>({ name:t, raw:P.map((_,p)=>o.a[p][i]) })), fA, v=>fmt(v));
+  let ag = G.map(g=>({ name:g.name, raw:P.map((_,p)=>g.o.a[p][0]), onClick:g.onClick,
+      extra: sh.map(p=>`${esc(P[p].label)}: tareas ${fmt(g.o.a[p][1])}, cuestionarios ${fmt(g.o.a[p][2])}, foros ${fmt(g.o.a[p][3])}`).join('<br>') }))
+    .filter(g=>sh.some(p=>g.raw[p])).sort((a,b)=>sum(b,b.raw)-sum(a,a.raw));
   if(lvl==='cur') ag = ag.slice(0,12);
-  $('#tAct').textContent = 'Recursos y actividades creados';
   $('#sAct').textContent = `Por tipo y por ${lvlName}${S.mode==='dia'?', en promedio por día':''}.`;
-  $('#cActGrp').innerHTML = '';
-  const hdr = document.createElement('div'); hdr.className='hint'; hdr.style.marginTop='6px'; hdr.innerHTML = `<b style="color:var(--ink-2)">Por ${lvlName}${lvl==='cur'?' (12 con más creación)':''}</b>`;
-  const box = document.createElement('div'); box.className='bars';
-  $('#cActGrp').append(hdr, box);
-  bars(box, ag, { f:fA, tf:(v,g,p)=> `${fA(v)} (${fmt(p===1?g.r1:g.r2)} en total)` });
+  $('#cActGrp').innerHTML = `<p class="hint" style="margin:6px 0 4px"><b style="color:var(--ink-2)">Por ${lvlName}${lvl==='cur'?' (12 con más creación)':''}</b></p><div class="bars"></div>`;
+  bars($('#cActGrp .bars'), ag, fA, v=>fmt(v));
 }
 
 function renderStatus(rows){
-  const t1 = new Map();
-  for(const r of rows){ const s = t1.get(r[0]) || [0,0]; s[0]+=r[2]; s[1]+=r[3]; t1.set(r[0], s); }
-  const c = {both:0,p1:0,p2:0,none:0};
-  for(const [,s] of t1){ c[s[0]>0 && s[1]>0 ? 'both' : s[0]>0 ? 'p1' : s[1]>0 ? 'p2' : 'none']++; }
-  const tot = t1.size || 1;
-  const items = [['both','En ambos periodos'],['p1','Solo del 7 al 20 sep'],['p2','Solo del 21 al 24 sep'],['none','Sin actividad en ninguno']];
-  $('#stack').innerHTML = items.filter(([k])=>c[k]).map(([k,l])=>`<div class="${k}" style="flex:${c[k]}" data-k="${k}"></div>`).join('');
-  $('#stack').setAttribute('aria-label', items.map(([k,l])=>`${l}: ${c[k]}`).join('; '));
-  $('#stack').querySelectorAll('div').forEach(n=>{ const it = items.find(i=>i[0]===n.dataset.k); n.onmouseenter = e=>showTip(e, `<b>${it[1]}</b>${fmt(c[it[0]])} docentes (${fmt(c[it[0]]/tot*100,1)} %)`); n.onmousemove = moveTip; n.onmouseleave = hideTip; });
-  $('#stlist').innerHTML = items.map(([k,l])=>`<div class="st"><i class="sw ${k}"></i><b class="num">${fmt(c[k])}</b><span>${l} · ${fmt(c[k]/tot*100,1)} %</span></div>`).join('');
+  const sh = shown();
+  const per = new Map();
+  for(const r of rows){ const s = per.get(r[0]) || P.map(()=>0); for(let p=0;p<NP;p++) s[p]+=r[2][p]; per.set(r[0], s); }
+  let items;
+  if(sh.length===1){
+    const p = sh[0]; let a=0,n=0; for(const [,s] of per) s[p]>0 ? a++ : n++;
+    items = [[a, `Con actividad en ${P[p].label}`, col(p)], [n, 'Sin actividad', 'var(--none)']];
+    $('#sStat').textContent = `Docentes que registraron tiempo en el aula virtual entre ${P[p].label}.`;
+  } else if(sh.length===2){
+    const [pa,pb] = sh; const c=[0,0,0,0];
+    for(const [,s] of per){ const x=s[pa]>0, y=s[pb]>0; c[x&&y?0:x?1:y?2:3]++; }
+    items = [[c[0],'En ambos periodos','var(--s3)'], [c[1],`Solo en ${P[pa].label}`, col(pa)], [c[2],`Solo en ${P[pb].label}`, col(pb)], [c[3],'Sin actividad en ninguno','var(--none)']];
+    $('#sStat').textContent = 'Docentes según si registraron tiempo en uno, ambos o ningún periodo.';
+  } else {
+    const c = Array(NP+1).fill(0);
+    for(const [,s] of per){ c[sh.filter(p=>s[p]>0).length]++; }
+    items = [];
+    for(let k=NP;k>=1;k--) items.push([c[k], k===NP?`En los ${NP} periodos`:`En ${k} de ${NP} periodos`, `var(--s${Math.min(3,k)})`]);
+    items.push([c[0], 'Sin actividad en ninguno', 'var(--none)']);
+    $('#sStat').textContent = 'Constancia: en cuántos de los periodos registró tiempo cada docente.';
+  }
+  const tot = per.size || 1;
+  $('#stack').innerHTML = items.map((it,i)=> it[0] ? `<div style="flex:${it[0]};background:${it[2]}" data-i="${i}"></div>` : '').join('');
+  $('#stack').setAttribute('aria-label', items.map(it=>`${it[1]}: ${it[0]}`).join('; '));
+  $('#stack').querySelectorAll('div').forEach(n=>{ const it = items[+n.dataset.i]; n.onmouseenter = e=>showTip(e, `<b>${esc(it[1])}</b>${fmt(it[0])} docentes (${fmt(it[0]/tot*100,1)} %)`); n.onmousemove = moveTip; n.onmouseleave = hideTip; });
+  $('#stlist').innerHTML = items.map(it=>`<div class="st"><i class="sw" style="background:${it[2]}"></i><b class="num">${fmt(it[0])}</b><span>${esc(it[1])} · ${fmt(it[0]/tot*100,1)} %</span></div>`).join('');
 }
 
 // Table
 const PAGE = 25;
 function tableData(rows){
+  const sh = shown(), la = sh.at(-2), lb = sh.at(-1);
+  const build = (name, sub, grp, n, who, m, a) => {
+    const o = { name, sub, grp, n, who, m, a };
+    P.forEach((_,p)=>{ o['m'+p]=m[p]; o['a'+p]=a[p]; });
+    o.dd = sh.length>1 ? delta(m[la], la, m[lb], lb) : null;
+    o.d = o.dd ? (o.dd.pct ?? -Infinity) : 0;
+    return o;
+  };
   if(S.view==='cur'){
-    const G = groupBy(rows, r=>r[1]);
-    return [...G].map(([ci, rs])=>{ const c = D.courses[ci]; let m1=0,m2=0; const ts=[]; for(const r of rs){m1+=r[2];m2+=r[3];ts.push(D.teachers[r[0]][0]);}
-      const d = delta(m1,m2);
-      return { name:c[1], sub:c[0], grp:D.cats[c[2]][1]==='(Cursos directos de la facultad)'?D.cats[c[2]][0]:D.cats[c[2]][1], n:rs.length, who:ts.join(', '), m1, m2, r1:m1/d1, r2:m2/d2, d:d.pct ?? -Infinity, dd:d, a1:c[3], a2:c[7] }; });
+    return [...groupBy(rows, r=>r[1])].map(([ci, rs])=>{ const c = D.courses[ci]; const m = P.map(()=>0);
+      for(const r of rs) for(let p=0;p<NP;p++) m[p]+=r[2][p];
+      const cat = D.cats[c[2]];
+      return build(c[1], c[0], cat[1]==='(Cursos directos de la facultad)'?cat[0]:cat[1], rs.length, rs.map(r=>D.teachers[r[0]][0]).join(', '), m, P.map((_,p)=>c[3+p][0])); });
   }
-  const G = groupBy(rows, r=>r[0]);
-  return [...G].map(([ti, rs])=>{ const t = D.teachers[ti]; let m1=0,m2=0,e1=0,e2=0; for(const r of rs){m1+=r[2];m2+=r[3];e1+=r[4];e2+=r[5];}
-    const d = delta(m1,m2);
-    const fs = [...new Set(rs.map(r=>D.cats[D.courses[r[1]][2]][0]))];
-    return { name:t[0], sub:t[1], grp:fs.join(', '), n:rs.length, who:rs.map(r=>D.courses[r[1]][1]).join(', '), m1, m2, r1:m1/d1, r2:m2/d2, d:d.pct ?? -Infinity, dd:d, a1:e1, a2:e2 }; });
+  return [...groupBy(rows, r=>r[0])].map(([ti, rs])=>{ const t = D.teachers[ti]; const m = P.map(()=>0), e = P.map(()=>0);
+    for(const r of rs) for(let p=0;p<NP;p++){ m[p]+=r[2][p]; e[p]+=r[3][p]; }
+    return build(t[0], t[1], [...new Set(rs.map(r=>D.cats[D.courses[r[1]][2]][0]))].join(', '), rs.length, rs.map(r=>D.courses[r[1]][1]).join(', '), m, e); });
 }
 function renderTable(){
-  const rows = F;
-  const data = tableData(rows);
+  const sh = shown(), isC = S.view==='cur';
+  const data = tableData(F);
   const [sk, sd] = S.sort[S.view];
   data.sort((a,b)=>{ const x=a[sk], y=b[sk]; return (typeof x==='string' ? x.localeCompare(y,'es') : (x===y?0:(x<y?-1:1))) * sd; });
-  const isC = S.view==='cur';
-  const cols = [
-    ['name', isC?'Curso':'Docente', ''], ['grp', isC?'Programa':'Facultad', ''], ['n', isC?'Docentes':'Cursos', 'r'],
-    ['m1', 'Tiempo 7–20', 'r'], ['m2', 'Tiempo 21–24', 'r'], ['r1', 'Min/día 7–20', 'r'], ['r2', 'Min/día 21–24', 'r'], ['d', 'Variación ritmo', 'r'],
-    ['a1', isC?'Creados 7–20':'Ediciones 7–20', 'r'], ['a2', isC?'Creados 21–24':'Ediciones 21–24', 'r']];
-  $('#tbl thead').innerHTML = '<tr>' + cols.map(([k,l,c])=>`<th class="${c}" aria-sort="${sk===k?(sd>0?'ascending':'descending'):'none'}"><button type="button" data-k="${k}">${l}${sk===k?`<span class="ar">${sd>0?'▲':'▼'}</span>`:''}</button></th>`).join('') + '</tr>';
+  const cols = [['name', isC?'Curso':'Docente', ''], ['grp', isC?'Programa':'Facultad', ''], ['n', isC?'Docentes':'Cursos', 'r'],
+    ...sh.map(p=>['m'+p, 'Tiempo '+P[p].label, 'r', p])];
+  if(sh.length>1) cols.push(['d', `Variación ${P[sh.at(-1)].label}`, 'r']);
+  cols.push(...sh.map(p=>['a'+p, (isC?'Creados ':'Ediciones ')+P[p].label, 'r', p]));
+  $('#tbl thead').innerHTML = '<tr>' + cols.map(([k,l,c,p])=>`<th class="${c}" aria-sort="${sk===k?(sd>0?'ascending':'descending'):'none'}"><button type="button" data-k="${k}">${p!==undefined?`<span class="tdot" style="background:${col(p)}"></span>`:''}${esc(l)}${sk===k?`<span class="ar">${sd>0?'▲':'▼'}</span>`:''}</button></th>`).join('') + '</tr>';
   $('#tbl thead').querySelectorAll('button').forEach(b=> b.onclick = ()=>{ const k=b.dataset.k; const cur=S.sort[S.view]; S.sort[S.view] = [k, cur[0]===k ? -cur[1] : (['name','grp'].includes(k)?1:-1)]; S.page=0; renderTable(); });
   const pages = Math.max(1, Math.ceil(data.length/PAGE)); S.page = Math.min(Math.max(0,S.page), pages-1);
   const slice = data.slice(S.page*PAGE, S.page*PAGE+PAGE);
   $('#tbl tbody').innerHTML = slice.length ? slice.map(r=>{
-    const dd = r.dd, tag = dd.pct===Infinity ? '<span class="tag new">Nuevo</span>' : dd.pct===null ? '<span class="tag">Sin actividad</span>' : `<span class="chip ${dd.cls}" style="padding:1px 7px;font-size:11.5px">${dd.pct>0?'↑':dd.pct<0?'↓':'='} ${fmt(Math.abs(dd.pct))} %</span>`;
+    const dd = r.dd;
+    const tag = !dd ? '' : dd.pct===Infinity ? '<span class="tag new">Nuevo</span>' : dd.pct===null ? '<span class="tag">Sin actividad</span>' : chip(dd, true);
     return `<tr>
       <td><div class="cn">${esc(r.name)}</div><div class="cs">${esc(r.sub)}</div></td>
       <td>${esc(r.grp)}</td>
       <td class="r num" title="${esc(r.who)}">${fmt(r.n)}</td>
-      <td class="r num"><span class="tdot" style="background:var(--p1)"></span>${hm(r.m1)}</td>
-      <td class="r num"><span class="tdot" style="background:var(--p2)"></span>${hm(r.m2)}</td>
-      <td class="r num">${fmt(r.r1,1)}</td><td class="r num">${fmt(r.r2,1)}</td>
-      <td class="r">${tag}</td>
-      <td class="r num">${fmt(r.a1)}</td><td class="r num">${fmt(r.a2)}</td></tr>`;
-  }).join('') : `<tr><td colspan="10" class="hint">No hay resultados con los filtros actuales.</td></tr>`;
+      ${sh.map(p=>`<td class="r num">${hm(r.m[p])}<div class="cs">${fmt(r.m[p]/P[p].days,1)} min/día</div></td>`).join('')}
+      ${sh.length>1?`<td class="r">${tag}</td>`:''}
+      ${sh.map(p=>`<td class="r num">${fmt(r.a[p])}</td>`).join('')}</tr>`;
+  }).join('') : `<tr><td colspan="${cols.length}" class="hint">No hay resultados con los filtros actuales.</td></tr>`;
   $('#pgInfo').textContent = data.length ? `${fmt(S.page*PAGE+1)}–${fmt(S.page*PAGE+slice.length)} de ${fmt(data.length)} ${isC?'cursos':'docentes'}` : '';
   $('#pgPrev').disabled = S.page<=0; $('#pgNext').disabled = S.page>=pages-1;
-  $('#sTbl').textContent = isC
-    ? 'Tiempo que los docentes de cada curso dedicaron al aula virtual y recursos creados en el curso. Ordena haciendo clic en los encabezados. Pasa el cursor sobre “Docentes” para ver los nombres.'
-    : 'Tiempo total de cada docente sumando todos sus cursos, y acciones de edición (crear, modificar o borrar). Pasa el cursor sobre “Cursos” para ver cuáles son.';
+  $('#sTbl').textContent = (isC
+    ? 'Tiempo que los docentes de cada curso dedicaron al aula virtual y recursos creados en el curso. Pasa el cursor sobre “Docentes” para ver los nombres.'
+    : 'Tiempo total de cada docente sumando todos sus cursos, y acciones de edición (crear, modificar o borrar). Pasa el cursor sobre “Cursos” para ver cuáles son.')
+    + ' Ordena haciendo clic en los encabezados.';
 }
 
 function renderCrumbs(){
-  const parts = [`<button type="button" data-l="0">Pregrado presencial</button>`];
+  const parts = [S.fac ? `<button type="button" data-l="0">Pregrado presencial</button>` : '<span class="cur">Pregrado presencial</span>'];
   if(S.fac) parts.push('<span class="sep">›</span>', S.prog ? `<button type="button" data-l="1">${esc(S.fac)}</button>` : `<span class="cur">${esc(S.fac)}</span>`);
   if(S.prog) parts.push('<span class="sep">›</span>', `<span class="cur">${esc(S.prog)}</span>`);
-  if(!S.fac) parts[0] = '<span class="cur">Pregrado presencial</span>';
-  $('#crumbs').innerHTML = '<span>Estás viendo:</span>' + parts.join('') + (S.q ? ` <span class="sep">·</span> <span>búsqueda “${esc($('#fQ').value.trim())}”</span>` : '');
+  const sh = shown();
+  $('#crumbs').innerHTML = '<span>Estás viendo:</span>' + parts.join('') + (S.q ? ` <span class="sep">·</span> <span>búsqueda “${esc($('#fQ').value.trim())}”</span>` : '')
+    + ` <span class="sep">·</span> <span>${sh.map(p=>esc(P[p].label)).join(' vs ')}</span>`;
   $('#crumbs').querySelectorAll('button').forEach(b=> b.onclick = ()=> b.dataset.l==='0' ? setFac('') : setProg(''));
 }
 
@@ -470,5 +505,5 @@ function render(){
   renderStatus(F);
   renderTable();
 }
-fillFac(); fillProg(); render();
+fillFac(); fillProg(); syncPeriodUI(); render();
 </script>

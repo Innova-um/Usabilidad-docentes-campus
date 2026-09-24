@@ -1,9 +1,12 @@
 # Usabilidad docentes · Campus Virtual
 
-Dashboard interactivo que compara el uso del aula virtual (Moodle) por parte de los docentes de **Pregrado Presencial 2026-2** en dos periodos:
+Dashboard interactivo que compara el uso del aula virtual (Moodle) por parte de los docentes de **Pregrado Presencial 2026-2** en tres periodos:
 
-- **Periodo 1:** 7 al 20 de septiembre de 2026 (14 días)
-- **Periodo 2:** 21 al 24 de septiembre de 2026 (corte 24/09/2026 09:39, 3,4 días)
+- **7 al 13 de septiembre de 2026** (7 días)
+- **14 al 20 de septiembre de 2026** (7 días)
+- **21 al 24 de septiembre de 2026** (corte 24/09/2026 09:39, 3,4 días)
+
+Se pueden ver los tres periodos a la vez, comparar dos cualesquiera o ver uno solo.
 
 Abre `index.html` en el navegador. No necesita servidor.
 
@@ -18,14 +21,15 @@ Abre `index.html` en el navegador. No necesita servidor.
 
 ## Cómo actualizarlo
 
-1. Exporta el informe de Configurable Reports de cada periodo a Excel y guárdalo en la raíz del repositorio como `07-20sep.xlsx` y `21-24sep.xlsx`. Los Excel no se suben a GitHub.
+1. Exporta el informe de Configurable Reports de cada periodo a Excel y guárdalo en la raíz del repositorio (`07-13sep.xlsx`, `14-20sep.xlsx`, `21-24sep.xlsx`). Los Excel no se suben a GitHub.
+   Para agregar o cambiar periodos, edita la lista `PERIODOS` al inicio de `build/build.py`.
 2. Ejecuta:
 
    ```bash
    python build/build.py
    ```
 
-   El script lee los dos Excel, cruza profesor + curso y genera `index.html` con los datos incluidos.
+   El script lee los Excel, cruza profesor + curso y genera `index.html` con los datos incluidos.
 
 Requisitos: Python 3 con `pandas` y `openpyxl`.
 
