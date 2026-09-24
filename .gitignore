@@ -1,0 +1,6 @@
+# Informes exportados de Moodle (datos crudos, no se versionan)
+*.xlsx
+*.xls
+*.csv
+~$*
+__pycache__/

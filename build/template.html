@@ -1,0 +1,486 @@
+<title>Pulso Docente Presencial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif&display=swap">
+<style>
+:root{
+  --page:#f2f4f7; --surface:#ffffff; --surface-2:#f7f8fa;
+  --ink:#101722; --ink-2:#4a5566; --muted:#7b8494;
+  --grid:#e3e7ee; --line:#d4d9e1; --ring:rgba(16,23,34,.10);
+  --p1:#2a78d6; --p2:#eb6834; --both:#1baf7a; --none:#c5cad3;
+  --up:#0b7a3b; --down:#b3261e; --chip-up:#e3f4ea; --chip-down:#fbe7e5; --chip-flat:#eceff3;
+  --focus:#2a78d6;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --page:#0d1015; --surface:#161a21; --surface-2:#1c212a;
+    --ink:#f1f3f6; --ink-2:#b4bcc8; --muted:#848d9b;
+    --grid:#262c36; --line:#323946; --ring:rgba(255,255,255,.10);
+    --p1:#3987e5; --p2:#d95926; --both:#199e70; --none:#3b4250;
+    --up:#4cc27a; --down:#f08a80; --chip-up:#16301f; --chip-down:#3a1a17; --chip-flat:#242a33;
+    --focus:#7fb0f0;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --page:#0d1015; --surface:#161a21; --surface-2:#1c212a;
+  --ink:#f1f3f6; --ink-2:#b4bcc8; --muted:#848d9b;
+  --grid:#262c36; --line:#323946; --ring:rgba(255,255,255,.10);
+  --p1:#3987e5; --p2:#d95926; --both:#199e70; --none:#3b4250;
+  --up:#4cc27a; --down:#f08a80; --chip-up:#16301f; --chip-down:#3a1a17; --chip-flat:#242a33;
+  --focus:#7fb0f0;
+}
+*{box-sizing:border-box}
+body{background:var(--page);color:var(--ink);font:14px/1.5 "Instrument Sans",system-ui,"Segoe UI",sans-serif;padding-inline:16px;padding-block:24px 48px}
+.wrap{max-width:1240px;margin:0 auto;display:grid;gap:20px}
+h1,h2,h3{margin:0;text-wrap:balance}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+/* Header */
+.head{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-end;justify-content:space-between}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:clamp(30px,4.5vw,44px);line-height:1.05;letter-spacing:-.01em}
+.periods{display:flex;flex-wrap:wrap;gap:10px}
+.period{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--ring);border-radius:10px;padding:8px 12px}
+.sw{width:12px;height:12px;border-radius:3px;flex:none}
+.sw.p1{background:var(--p1)} .sw.p2{background:var(--p2)} .sw.both{background:var(--both)} .sw.none{background:var(--none)}
+.period b{display:block;font-size:13px}
+.period span{font-size:12px;color:var(--ink-2)}
+
+/* Filter bar */
+.filters{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--page);padding-block:10px;display:grid;gap:10px}
+.frow{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.field{display:grid;gap:4px;min-width:0;flex:1 1 200px}
+.field label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+select,input[type=search]{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:38px}
+select:disabled{opacity:.55}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:3px;flex:none}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:6px;cursor:pointer;color:var(--ink-2);font-weight:500;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.crumbs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--ink-2)}
+.crumbs button{border:0;background:none;padding:2px 4px;border-radius:4px;cursor:pointer;color:var(--ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
+.crumbs button:hover{text-decoration-color:var(--ink)}
+.crumbs .sep{color:var(--muted)}
+.crumbs .cur{font-weight:600;color:var(--ink)}
+.reset{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;cursor:pointer;min-height:38px;flex:none}
+
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:16px;display:grid;gap:10px;align-content:start}
+.kpi h3{font-size:13px;font-weight:600;color:var(--ink-2)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pv{display:grid;gap:2px}
+.pv .lab{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.pv .val{font-size:26px;font-weight:600;line-height:1.1;letter-spacing:-.01em}
+.pv .sub{font-size:12px;color:var(--ink-2)}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;border-radius:999px;padding:3px 9px;width:max-content}
+.chip.up{background:var(--chip-up);color:var(--up)}
+.chip.down{background:var(--chip-down);color:var(--down)}
+.chip.flat{background:var(--chip-flat);color:var(--ink-2)}
+.kpi .foot{font-size:12px;color:var(--ink-2);display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+
+/* Panels */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr));gap:12px}
+.panel{background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:18px;display:grid;gap:14px;align-content:start;min-width:0}
+.ph{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:space-between;align-items:baseline}
+.ph h2{font-size:17px;font-weight:600}
+.ph p{margin:0;font-size:12.5px;color:var(--ink-2);max-width:60ch}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+
+/* Bars */
+.bars{display:grid;gap:4px}
+.grp{display:grid;gap:3px;padding:6px 8px;border-radius:8px;cursor:default}
+.grp.click{cursor:pointer}
+.grp:hover{background:var(--surface-2)}
+.grp .gl{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+.grp .gl .n{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.grp .gl .d{flex:none;font-size:12px}
+.br{display:flex;align-items:center;gap:8px;height:12px}
+.br i{display:block;height:10px;border-radius:0 4px 4px 0;min-width:2px}
+.br i.p1{background:var(--p1)} .br i.p2{background:var(--p2)}
+.br i.zero{background:var(--grid);width:2px}
+.br em{font-style:normal;font-size:11.5px;color:var(--ink-2);white-space:nowrap}
+.hint{font-size:12px;color:var(--muted)}
+
+/* Status stack */
+.stack{display:flex;height:26px;gap:2px;border-radius:6px;overflow:hidden}
+.stack div{height:100%;min-width:2px}
+.stack .both{background:var(--both)} .stack .p1{background:var(--p1)} .stack .p2{background:var(--p2)} .stack .none{background:var(--none)}
+.stlist{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.st{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;align-items:center}
+.st .sw{grid-row:span 2}
+.st b{font-size:20px;font-weight:600;line-height:1.1}
+.st span{font-size:12px;color:var(--ink-2);grid-column:2}
+
+/* Table */
+.tabs{display:inline-flex;gap:4px}
+.tblwrap{overflow-x:auto;border:1px solid var(--grid);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:880px;font-size:13px}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--grid);vertical-align:top}
+th{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--surface-2);position:sticky;top:0;white-space:nowrap}
+th button{all:unset;cursor:pointer;display:inline-flex;gap:4px;align-items:center}
+th button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+th .ar{color:var(--ink);font-size:10px}
+td.r,th.r{text-align:right}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--surface-2)}
+.cn{font-weight:500}
+.cs{font-size:11.5px;color:var(--muted)}
+.tdot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.tag{font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px;background:var(--chip-flat);color:var(--ink-2);white-space:nowrap}
+.tag.new{background:var(--chip-up);color:var(--up)}
+.pager{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--ink-2)}
+.pager button{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:5px 10px;cursor:pointer}
+.pager button:disabled{opacity:.4;cursor:default}
+.note{font-size:12.5px;color:var(--ink-2);background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:14px 16px;display:grid;gap:6px}
+.note b{color:var(--ink)}
+.note ul{margin:0;padding-left:18px;display:grid;gap:4px}
+
+/* Tooltip */
+#tip{position:fixed;z-index:50;pointer-events:none;background:var(--ink);color:var(--surface);border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.45;max-width:280px;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+#tip b{display:block;margin-bottom:2px}
+#tip .tr{display:flex;align-items:center;gap:6px}
+#tip .tr i{width:8px;height:8px;border-radius:2px;display:inline-block}
+@media (prefers-reduced-motion:no-preference){ .br i{transition:width .35s ease} }
+@media (max-width:560px){ .pv .val{font-size:22px} .seg button{padding:6px 9px} }
+</style>
+
+<div class="wrap">
+  <header class="head">
+    <div>
+      <div class="eyebrow">Campus Virtual · Pregrado presencial · 2026-2</div>
+      <h1>Pulso docente en el aula virtual</h1>
+    </div>
+    <div class="periods" id="periods"></div>
+  </header>
+
+  <section class="filters" aria-label="Filtros">
+    <div class="frow">
+      <div class="field"><label for="fFac">Facultad</label><select id="fFac"></select></div>
+      <div class="field"><label for="fProg">Programa</label><select id="fProg"></select></div>
+      <div class="field"><label for="fQ">Buscar docente o curso</label><input id="fQ" type="search" placeholder="Nombre, usuario o código del curso" autocomplete="off"></div>
+      <div class="seg" role="group" aria-label="Forma de comparar">
+        <button type="button" id="mTot" aria-pressed="false">Total del periodo</button>
+        <button type="button" id="mDia" aria-pressed="true">Promedio por día</button>
+      </div>
+      <button type="button" class="reset" id="reset">Limpiar filtros</button>
+    </div>
+    <nav class="crumbs" id="crumbs" aria-label="Nivel actual"></nav>
+  </section>
+
+  <section class="kpis" id="kpis" aria-label="Indicadores"></section>
+
+  <section class="grid2">
+    <div class="panel">
+      <div class="ph">
+        <div><h2 id="tTime">Tiempo de uso docente</h2><p id="sTime"></p></div>
+        <div class="legend"><span><i class="sw p1"></i>7–20 sep</span><span><i class="sw p2"></i>21–24 sep</span></div>
+      </div>
+      <div class="bars" id="cTime"></div>
+    </div>
+    <div class="panel">
+      <div class="ph">
+        <div><h2 id="tAct">Actividades creadas</h2><p id="sAct"></p></div>
+        <div class="legend"><span><i class="sw p1"></i>7–20 sep</span><span><i class="sw p2"></i>21–24 sep</span></div>
+      </div>
+      <div class="bars" id="cType"></div>
+      <div class="bars" id="cActGrp"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="ph">
+      <div><h2>¿Quiénes trabajaron en cada periodo?</h2><p>Docentes según si registraron tiempo en el aula virtual en uno, ambos o ningún periodo.</p></div>
+    </div>
+    <div class="stack" id="stack" role="img"></div>
+    <div class="stlist" id="stlist"></div>
+  </section>
+
+  <section class="panel">
+    <div class="ph">
+      <div><h2>Detalle</h2><p id="sTbl"></p></div>
+      <div class="seg tabs" role="group" aria-label="Vista de la tabla">
+        <button type="button" id="vCur" aria-pressed="true">Por curso</button>
+        <button type="button" id="vDoc" aria-pressed="false">Por docente</button>
+      </div>
+    </div>
+    <div class="tblwrap"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+    <div class="pager"><span id="pgInfo"></span><span style="display:flex;gap:6px"><button type="button" id="pgPrev">Anterior</button><button type="button" id="pgNext">Siguiente</button></span></div>
+  </section>
+
+  <aside class="note">
+    <b>Cómo leer este tablero</b>
+    <ul>
+      <li><b>Los periodos no tienen la misma duración.</b> Por eso la variación (↑ ↓) siempre compara el <b>ritmo diario</b>. Con “Total del periodo” las barras muestran los valores acumulados.</li>
+      <li><b>Tiempo de uso:</b> es una estimación a partir de los clics en Moodle. Se suma el tiempo entre clics consecutivos y se descartan las pausas de más de 30 minutos.</li>
+      <li><b>Actividades creadas:</b> recursos y actividades agregados al curso en cada periodo. Los contenidos totales incluyen tareas, cuestionarios y foros. Se cuentan por curso, no por docente.</li>
+      <li id="cutNote"></li>
+    </ul>
+  </aside>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+const D = /*__DATA__*/null;
+const d1 = D.p.d1, d2 = D.p.d2;
+const $ = s => document.querySelector(s);
+const fmt = (n, dec=0) => Number(n).toLocaleString('es-CO', {minimumFractionDigits:dec, maximumFractionDigits:dec});
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const hm = m => { m = Math.round(m); const h = Math.floor(m/60), r = m%60; return h ? `${fmt(h)} h ${String(r).padStart(2,'0')} m` : `${r} min`; };
+const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+
+// Precompute search keys
+const TK = D.teachers.map(t => norm(t[0]+' '+t[1]));
+const CK = D.courses.map(c => norm(c[0]+' '+c[1]));
+const facs = [...new Set(D.cats.map(c => c[0]))].sort((a,b)=>a.localeCompare(b,'es'));
+
+const S = { fac:'', prog:'', q:'', mode:'dia', view:'cur', sort:{cur:['m1',-1], doc:['m1',-1]}, page:0 };
+
+// Header periods
+$('#periods').innerHTML = `
+  <div class="period"><i class="sw p1"></i><div><b>Periodo 1 · 7–20 sep</b><span>${d1} días completos</span></div></div>
+  <div class="period"><i class="sw p2"></i><div><b>Periodo 2 · 21–24 sep</b><span>${fmt(d2,1)} días (corte ${esc(D.p.cut)})</span></div></div>`;
+$('#cutNote').innerHTML = `<b>Periodo 2 en curso:</b> el informe se generó el ${esc(D.p.cut)}, así que cubre ${fmt(d2,1)} días. El ritmo diario se calcula con esa duración.`;
+
+// Filters
+function fillFac(){ $('#fFac').innerHTML = '<option value="">Todas las facultades</option>' + facs.map(f=>`<option>${esc(f)}</option>`).join(''); $('#fFac').value = S.fac; }
+function fillProg(){
+  const sel = $('#fProg');
+  if(!S.fac){ sel.innerHTML = '<option value="">Elige primero una facultad</option>'; sel.disabled = true; return; }
+  const ps = [...new Set(D.cats.filter(c=>c[0]===S.fac).map(c=>c[1]))].sort((a,b)=>a.localeCompare(b,'es'));
+  sel.disabled = false;
+  sel.innerHTML = '<option value="">Todos los programas</option>' + ps.map(p=>`<option>${esc(p)}</option>`).join('');
+  sel.value = S.prog;
+}
+function setFac(f){ S.fac=f; S.prog=''; S.page=0; fillFac(); fillProg(); render(); }
+function setProg(p){ S.prog=p; S.page=0; fillProg(); render(); }
+$('#fFac').onchange = e => setFac(e.target.value);
+$('#fProg').onchange = e => setProg(e.target.value);
+let qT; $('#fQ').oninput = e => { clearTimeout(qT); qT = setTimeout(()=>{ S.q = norm(e.target.value.trim()); S.page=0; render(); }, 180); };
+function setMode(m){ S.mode=m; $('#mTot').setAttribute('aria-pressed', m==='tot'); $('#mDia').setAttribute('aria-pressed', m==='dia'); render(); }
+$('#mTot').onclick = ()=>setMode('tot'); $('#mDia').onclick = ()=>setMode('dia');
+function setView(v){ S.view=v; S.page=0; $('#vCur').setAttribute('aria-pressed', v==='cur'); $('#vDoc').setAttribute('aria-pressed', v==='doc'); renderTable(); }
+$('#vCur').onclick = ()=>setView('cur'); $('#vDoc').onclick = ()=>setView('doc');
+$('#reset').onclick = ()=>{ S.q=''; $('#fQ').value=''; setFac(''); };
+$('#pgPrev').onclick = ()=>{ S.page--; renderTable(); };
+$('#pgNext').onclick = ()=>{ S.page++; renderTable(); };
+
+// Tooltip
+const tip = $('#tip');
+function showTip(e, html){ tip.innerHTML = html; tip.hidden = false; moveTip(e); }
+function moveTip(e){ const r = tip.getBoundingClientRect(); let x = e.clientX+14, y = e.clientY+14; if(x+r.width > innerWidth-8) x = e.clientX-r.width-14; if(y+r.height > innerHeight-8) y = e.clientY-r.height-14; tip.style.left = Math.max(8,x)+'px'; tip.style.top = Math.max(8,y)+'px'; }
+function hideTip(){ tip.hidden = true; }
+
+// Data filtering
+let F = null;
+function filtered(){
+  const rows = [];
+  for(const r of D.rows){
+    const c = D.courses[r[1]], cat = D.cats[c[2]];
+    if(S.fac && cat[0]!==S.fac) continue;
+    if(S.prog && cat[1]!==S.prog) continue;
+    if(S.q && !TK[r[0]].includes(S.q) && !CK[r[1]].includes(S.q)) continue;
+    rows.push(r);
+  }
+  return rows;
+}
+function agg(rows){
+  const o = {m1:0,m2:0,t:new Set(),t1:new Set(),t2:new Set(),c:new Set(),c1:new Set(),c2:new Set(),a1:[0,0,0,0],a2:[0,0,0,0]};
+  for(const r of rows){
+    o.m1+=r[2]; o.m2+=r[3]; o.t.add(r[0]); o.c.add(r[1]);
+    if(r[2]>0){o.t1.add(r[0]); o.c1.add(r[1]);}
+    if(r[3]>0){o.t2.add(r[0]); o.c2.add(r[1]);}
+  }
+  for(const ci of o.c){ const c = D.courses[ci]; for(let i=0;i<4;i++){ o.a1[i]+=c[3+i]; o.a2[i]+=c[7+i]; } }
+  return o;
+}
+function delta(v1, v2){ // compares daily rate
+  const r1 = v1/d1, r2 = v2/d2;
+  if(r1===0 && r2===0) return {cls:'flat', txt:'Sin actividad', pct:null};
+  if(r1===0) return {cls:'up', txt:'Nuevo', pct:Infinity};
+  const p = (r2-r1)/r1*100;
+  if(Math.abs(p) < 1) return {cls:'flat', txt:'= Igual ritmo', pct:0};
+  return {cls: p>0?'up':'down', txt:`${p>0?'↑':'↓'} ${fmt(Math.abs(p))} % ritmo diario`, pct:p};
+}
+const val = (v, per) => S.mode==='dia' ? v/per : v;
+
+// KPIs
+function renderKPIs(o){
+  const tt = o.t.size, tc = o.c.size;
+  const dT = delta(o.m1, o.m2);
+  const act1 = o.a1[0], act2 = o.a2[0], dA = delta(act1, act2);
+  const pT1 = tt? o.t1.size/tt*100:0, pT2 = tt? o.t2.size/tt*100:0;
+  const pC1 = tc? o.c1.size/tc*100:0, pC2 = tc? o.c2.size/tc*100:0;
+  const avg1 = o.t1.size? o.m1/o.t1.size/d1:0, avg2 = o.t2.size? o.m2/o.t2.size/d2:0, dAvg = delta(avg1*d1, avg2*d2);
+  const pp = (a,b)=>{ const d=b-a; const cls = Math.abs(d)<0.5?'flat':(d>0?'up':'down'); return `<span class="chip ${cls}">${Math.abs(d)<0.5?'= Sin cambio':(d>0?'↑ ':'↓ ')+(Math.abs(d)<0.5?'':fmt(Math.abs(d),1)+' pts')}</span>`; };
+  const pv = (cls, lab, v, sub) => `<div class="pv"><span class="lab"><i class="sw ${cls}"></i>${lab}</span><span class="val num">${v}</span><span class="sub">${sub}</span></div>`;
+  $('#kpis').innerHTML = `
+    <article class="kpi"><h3>Tiempo de uso docente</h3>
+      <div class="pair">${pv('p1','7–20 sep', fmt(o.m1/60)+' h', fmt(o.m1/60/d1,1)+' h por día')}${pv('p2','21–24 sep', fmt(o.m2/60)+' h', fmt(o.m2/60/d2,1)+' h por día')}</div>
+      <div class="foot"><span class="chip ${dT.cls}">${dT.txt}</span></div></article>
+    <article class="kpi"><h3>Minutos al día por docente activo</h3>
+      <div class="pair">${pv('p1','7–20 sep', fmt(avg1,1), 'min/día · '+fmt(o.t1.size)+' docentes')}${pv('p2','21–24 sep', fmt(avg2,1), 'min/día · '+fmt(o.t2.size)+' docentes')}</div>
+      <div class="foot"><span class="chip ${dAvg.cls}">${dAvg.txt}</span></div></article>
+    <article class="kpi"><h3>Docentes con actividad</h3>
+      <div class="pair">${pv('p1','7–20 sep', fmt(pT1,1)+' %', fmt(o.t1.size)+' de '+fmt(tt))}${pv('p2','21–24 sep', fmt(pT2,1)+' %', fmt(o.t2.size)+' de '+fmt(tt))}</div>
+      <div class="foot">${pp(pT1,pT2)}<span>Cursos con docente activo: ${fmt(pC1,1)} % → ${fmt(pC2,1)} %</span></div></article>
+    <article class="kpi"><h3>Recursos y actividades creados</h3>
+      <div class="pair">${pv('p1','7–20 sep', fmt(act1), fmt(act1/d1,1)+' por día')}${pv('p2','21–24 sep', fmt(act2), fmt(act2/d2,1)+' por día')}</div>
+      <div class="foot"><span class="chip ${dA.cls}">${dA.txt}</span></div></article>`;
+}
+
+// Grouped bars
+function bars(el, groups, opts){
+  // groups: [{name, v1, v2, detail, onClick, tip}]
+  const max = Math.max(1, ...groups.map(g=>Math.max(g.v1,g.v2)));
+  if(!groups.length){ el.innerHTML = '<p class="hint">No hay datos con los filtros actuales.</p>'; return; }
+  el.innerHTML = groups.map((g,i)=>{
+    const w1 = g.v1/max*100, w2 = g.v2/max*100;
+    const d = delta(g.r1 ?? g.v1, g.r2 ?? g.v2);
+    return `<div class="grp${g.onClick?' click':''}" data-i="${i}" ${g.onClick?'tabindex="0" role="button"':''} aria-label="${esc(g.name)}: ${esc(opts.f(g.v1))} frente a ${esc(opts.f(g.v2))}">
+      <div class="gl"><span class="n" title="${esc(g.name)}">${esc(g.name)}</span><span class="d"><span class="chip ${d.cls}" style="padding:1px 7px;font-size:11px">${d.txt.replace(' ritmo diario','')}</span></span></div>
+      <div class="br"><i class="${g.v1?'p1':'zero'}" style="width:${g.v1?w1:0}%"></i><em class="num">${opts.f(g.v1)}</em></div>
+      <div class="br"><i class="${g.v2?'p2':'zero'}" style="width:${g.v2?w2:0}%"></i><em class="num">${opts.f(g.v2)}</em></div>
+    </div>`;
+  }).join('') + (opts.hint?`<p class="hint">${opts.hint}</p>`:'');
+  el.querySelectorAll('.grp').forEach(n=>{
+    const g = groups[+n.dataset.i];
+    n.onmouseenter = e => showTip(e, `<b>${esc(g.name)}</b><div class="tr"><i style="background:var(--p1)"></i>7–20 sep: ${esc(opts.tf(g.v1, g, 1))}</div><div class="tr"><i style="background:var(--p2)"></i>21–24 sep: ${esc(opts.tf(g.v2, g, 2))}</div>${g.extra?`<div style="opacity:.8;margin-top:4px">${g.extra}</div>`:''}`);
+    n.onmousemove = moveTip; n.onmouseleave = hideTip;
+    if(g.onClick){ n.onclick = ()=>{hideTip(); g.onClick();}; n.onkeydown = e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault(); g.onClick();} }; }
+  });
+}
+
+function groupBy(rows, keyFn){
+  const m = new Map();
+  for(const r of rows){ const k = keyFn(r); if(!m.has(k)) m.set(k, []); m.get(k).push(r); }
+  return m;
+}
+
+function renderCharts(rows){
+  const lvl = !S.fac ? 'fac' : (!S.prog ? 'prog' : 'cur');
+  const lvlName = {fac:'facultad', prog:'programa', cur:'curso'}[lvl];
+  const key = lvl==='fac' ? r=>D.cats[D.courses[r[1]][2]][0] : lvl==='prog' ? r=>D.cats[D.courses[r[1]][2]][1] : r=>r[1];
+  const G = groupBy(rows, key);
+  const unitT = S.mode==='dia' ? 'h/día' : 'h';
+  const fT = v => S.mode==='dia' ? fmt(v/60,1)+' h/día' : fmt(v/60)+' h';
+  let tg = [...G].map(([k, rs])=>{
+    const o = agg(rs);
+    const name = lvl==='cur' ? D.courses[k][1] : k;
+    return { name, r1:o.m1, r2:o.m2, v1:val(o.m1,d1), v2:val(o.m2,d2), o,
+      extra: `${fmt(o.t.size)} docentes · ${fmt(o.c.size)} cursos`,
+      onClick: lvl==='fac' ? ()=>setFac(k) : lvl==='prog' ? ()=>setProg(k) : null };
+  }).sort((a,b)=> (b.v1+b.v2)-(a.v1+a.v2));
+  const more = lvl==='cur' && tg.length>12 ? tg.length-12 : 0;
+  if(lvl==='cur') tg = tg.slice(0,12);
+  $('#tTime').textContent = `Tiempo de uso docente por ${lvlName}`;
+  $('#sTime').textContent = (S.mode==='dia'?'Horas por día':'Horas acumuladas') + ` que los docentes dedicaron al aula virtual.` + (lvl!=='cur' ? ` Haz clic en una ${lvlName} para ver su detalle.` : ' Los 12 cursos con más tiempo.');
+  bars($('#cTime'), tg, { f:fT, tf:(v,g,p)=> `${fT(v)} (${hm(p===1?g.r1:g.r2)} en total)`, hint: more?`y ${fmt(more)} cursos más en la tabla de detalle.`:'' });
+
+  // Activity by type
+  const o = agg(rows);
+  const types = ['Contenidos (todos)','Tareas','Cuestionarios','Foros'];
+  const fA = v => S.mode==='dia' ? fmt(v,1)+'/día' : fmt(v);
+  bars($('#cType'), types.map((t,i)=>({ name:t, r1:o.a1[i], r2:o.a2[i], v1:val(o.a1[i],d1), v2:val(o.a2[i],d2) })),
+    { f:fA, tf:(v,g,p)=> `${fA(v)} (${fmt(p===1?g.r1:g.r2)} en total)` });
+  // Activity by group
+  let ag = [...G].map(([k, rs])=>{
+    const a = agg(rs);
+    return { name: lvl==='cur' ? D.courses[k][1] : k, r1:a.a1[0], r2:a.a2[0], v1:val(a.a1[0],d1), v2:val(a.a2[0],d2),
+      extra:`Tareas ${fmt(a.a1[1])} → ${fmt(a.a2[1])} · Cuestionarios ${fmt(a.a1[2])} → ${fmt(a.a2[2])} · Foros ${fmt(a.a1[3])} → ${fmt(a.a2[3])}`,
+      onClick: lvl==='fac' ? ()=>setFac(k) : lvl==='prog' ? ()=>setProg(k) : null };
+  }).filter(g=>g.r1||g.r2).sort((a,b)=>(b.v1+b.v2)-(a.v1+a.v2));
+  if(lvl==='cur') ag = ag.slice(0,12);
+  $('#tAct').textContent = 'Recursos y actividades creados';
+  $('#sAct').textContent = `Por tipo y por ${lvlName}${S.mode==='dia'?', en promedio por día':''}.`;
+  $('#cActGrp').innerHTML = '';
+  const hdr = document.createElement('div'); hdr.className='hint'; hdr.style.marginTop='6px'; hdr.innerHTML = `<b style="color:var(--ink-2)">Por ${lvlName}${lvl==='cur'?' (12 con más creación)':''}</b>`;
+  const box = document.createElement('div'); box.className='bars';
+  $('#cActGrp').append(hdr, box);
+  bars(box, ag, { f:fA, tf:(v,g,p)=> `${fA(v)} (${fmt(p===1?g.r1:g.r2)} en total)` });
+}
+
+function renderStatus(rows){
+  const t1 = new Map();
+  for(const r of rows){ const s = t1.get(r[0]) || [0,0]; s[0]+=r[2]; s[1]+=r[3]; t1.set(r[0], s); }
+  const c = {both:0,p1:0,p2:0,none:0};
+  for(const [,s] of t1){ c[s[0]>0 && s[1]>0 ? 'both' : s[0]>0 ? 'p1' : s[1]>0 ? 'p2' : 'none']++; }
+  const tot = t1.size || 1;
+  const items = [['both','En ambos periodos'],['p1','Solo del 7 al 20 sep'],['p2','Solo del 21 al 24 sep'],['none','Sin actividad en ninguno']];
+  $('#stack').innerHTML = items.filter(([k])=>c[k]).map(([k,l])=>`<div class="${k}" style="flex:${c[k]}" data-k="${k}"></div>`).join('');
+  $('#stack').setAttribute('aria-label', items.map(([k,l])=>`${l}: ${c[k]}`).join('; '));
+  $('#stack').querySelectorAll('div').forEach(n=>{ const it = items.find(i=>i[0]===n.dataset.k); n.onmouseenter = e=>showTip(e, `<b>${it[1]}</b>${fmt(c[it[0]])} docentes (${fmt(c[it[0]]/tot*100,1)} %)`); n.onmousemove = moveTip; n.onmouseleave = hideTip; });
+  $('#stlist').innerHTML = items.map(([k,l])=>`<div class="st"><i class="sw ${k}"></i><b class="num">${fmt(c[k])}</b><span>${l} · ${fmt(c[k]/tot*100,1)} %</span></div>`).join('');
+}
+
+// Table
+const PAGE = 25;
+function tableData(rows){
+  if(S.view==='cur'){
+    const G = groupBy(rows, r=>r[1]);
+    return [...G].map(([ci, rs])=>{ const c = D.courses[ci]; let m1=0,m2=0; const ts=[]; for(const r of rs){m1+=r[2];m2+=r[3];ts.push(D.teachers[r[0]][0]);}
+      const d = delta(m1,m2);
+      return { name:c[1], sub:c[0], grp:D.cats[c[2]][1]==='(Cursos directos de la facultad)'?D.cats[c[2]][0]:D.cats[c[2]][1], n:rs.length, who:ts.join(', '), m1, m2, r1:m1/d1, r2:m2/d2, d:d.pct ?? -Infinity, dd:d, a1:c[3], a2:c[7] }; });
+  }
+  const G = groupBy(rows, r=>r[0]);
+  return [...G].map(([ti, rs])=>{ const t = D.teachers[ti]; let m1=0,m2=0,e1=0,e2=0; for(const r of rs){m1+=r[2];m2+=r[3];e1+=r[4];e2+=r[5];}
+    const d = delta(m1,m2);
+    const fs = [...new Set(rs.map(r=>D.cats[D.courses[r[1]][2]][0]))];
+    return { name:t[0], sub:t[1], grp:fs.join(', '), n:rs.length, who:rs.map(r=>D.courses[r[1]][1]).join(', '), m1, m2, r1:m1/d1, r2:m2/d2, d:d.pct ?? -Infinity, dd:d, a1:e1, a2:e2 }; });
+}
+function renderTable(){
+  const rows = F;
+  const data = tableData(rows);
+  const [sk, sd] = S.sort[S.view];
+  data.sort((a,b)=>{ const x=a[sk], y=b[sk]; return (typeof x==='string' ? x.localeCompare(y,'es') : (x===y?0:(x<y?-1:1))) * sd; });
+  const isC = S.view==='cur';
+  const cols = [
+    ['name', isC?'Curso':'Docente', ''], ['grp', isC?'Programa':'Facultad', ''], ['n', isC?'Docentes':'Cursos', 'r'],
+    ['m1', 'Tiempo 7–20', 'r'], ['m2', 'Tiempo 21–24', 'r'], ['r1', 'Min/día 7–20', 'r'], ['r2', 'Min/día 21–24', 'r'], ['d', 'Variación ritmo', 'r'],
+    ['a1', isC?'Creados 7–20':'Ediciones 7–20', 'r'], ['a2', isC?'Creados 21–24':'Ediciones 21–24', 'r']];
+  $('#tbl thead').innerHTML = '<tr>' + cols.map(([k,l,c])=>`<th class="${c}" aria-sort="${sk===k?(sd>0?'ascending':'descending'):'none'}"><button type="button" data-k="${k}">${l}${sk===k?`<span class="ar">${sd>0?'▲':'▼'}</span>`:''}</button></th>`).join('') + '</tr>';
+  $('#tbl thead').querySelectorAll('button').forEach(b=> b.onclick = ()=>{ const k=b.dataset.k; const cur=S.sort[S.view]; S.sort[S.view] = [k, cur[0]===k ? -cur[1] : (['name','grp'].includes(k)?1:-1)]; S.page=0; renderTable(); });
+  const pages = Math.max(1, Math.ceil(data.length/PAGE)); S.page = Math.min(Math.max(0,S.page), pages-1);
+  const slice = data.slice(S.page*PAGE, S.page*PAGE+PAGE);
+  $('#tbl tbody').innerHTML = slice.length ? slice.map(r=>{
+    const dd = r.dd, tag = dd.pct===Infinity ? '<span class="tag new">Nuevo</span>' : dd.pct===null ? '<span class="tag">Sin actividad</span>' : `<span class="chip ${dd.cls}" style="padding:1px 7px;font-size:11.5px">${dd.pct>0?'↑':dd.pct<0?'↓':'='} ${fmt(Math.abs(dd.pct))} %</span>`;
+    return `<tr>
+      <td><div class="cn">${esc(r.name)}</div><div class="cs">${esc(r.sub)}</div></td>
+      <td>${esc(r.grp)}</td>
+      <td class="r num" title="${esc(r.who)}">${fmt(r.n)}</td>
+      <td class="r num"><span class="tdot" style="background:var(--p1)"></span>${hm(r.m1)}</td>
+      <td class="r num"><span class="tdot" style="background:var(--p2)"></span>${hm(r.m2)}</td>
+      <td class="r num">${fmt(r.r1,1)}</td><td class="r num">${fmt(r.r2,1)}</td>
+      <td class="r">${tag}</td>
+      <td class="r num">${fmt(r.a1)}</td><td class="r num">${fmt(r.a2)}</td></tr>`;
+  }).join('') : `<tr><td colspan="10" class="hint">No hay resultados con los filtros actuales.</td></tr>`;
+  $('#pgInfo').textContent = data.length ? `${fmt(S.page*PAGE+1)}–${fmt(S.page*PAGE+slice.length)} de ${fmt(data.length)} ${isC?'cursos':'docentes'}` : '';
+  $('#pgPrev').disabled = S.page<=0; $('#pgNext').disabled = S.page>=pages-1;
+  $('#sTbl').textContent = isC
+    ? 'Tiempo que los docentes de cada curso dedicaron al aula virtual y recursos creados en el curso. Ordena haciendo clic en los encabezados. Pasa el cursor sobre “Docentes” para ver los nombres.'
+    : 'Tiempo total de cada docente sumando todos sus cursos, y acciones de edición (crear, modificar o borrar). Pasa el cursor sobre “Cursos” para ver cuáles son.';
+}
+
+function renderCrumbs(){
+  const parts = [`<button type="button" data-l="0">Pregrado presencial</button>`];
+  if(S.fac) parts.push('<span class="sep">›</span>', S.prog ? `<button type="button" data-l="1">${esc(S.fac)}</button>` : `<span class="cur">${esc(S.fac)}</span>`);
+  if(S.prog) parts.push('<span class="sep">›</span>', `<span class="cur">${esc(S.prog)}</span>`);
+  if(!S.fac) parts[0] = '<span class="cur">Pregrado presencial</span>';
+  $('#crumbs').innerHTML = '<span>Estás viendo:</span>' + parts.join('') + (S.q ? ` <span class="sep">·</span> <span>búsqueda “${esc($('#fQ').value.trim())}”</span>` : '');
+  $('#crumbs').querySelectorAll('button').forEach(b=> b.onclick = ()=> b.dataset.l==='0' ? setFac('') : setProg(''));
+}
+
+function render(){
+  F = filtered();
+  renderCrumbs();
+  renderKPIs(agg(F));
+  renderCharts(F);
+  renderStatus(F);
+  renderTable();
+}
+fillFac(); fillProg(); render();
+</script>
