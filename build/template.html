@@ -349,7 +349,7 @@ function renderKPIs(o){
   $('#kpis').innerHTML =
     tile('Tiempo de uso docente', sh.map((p,k)=>pv(p, fmt(o.m[p]/60)+' h', fmt(o.m[p]/60/P[p].days,1)+' h por día', dd(k, o.m[sh[k-1]]??0, o.m[p]))).join('')) +
     tile('Minutos al día por docente activo', sh.map((p,k)=>pv(p, fmt(avg(p),1), 'min/día · '+fmt(o.tp[p].size)+' docentes', dd(k, (avg(sh[k-1]??p))*P[sh[k-1]??p].days, avg(p)*P[p].days))).join('')) +
-    tile('Docentes con actividad', sh.map((p,k)=>pv(p, fmt(pct(p),1)+' %', fmt(o.tp[p].size)+' de '+fmt(tt), pp(k, pct(sh[k-1]??p), pct(p)))).join('')) +
+    tile('Docentes activos en plataforma', sh.map((p,k)=>pv(p, fmt(pct(p),1)+' %', fmt(o.tp[p].size)+' de '+fmt(tt), pp(k, pct(sh[k-1]??p), pct(p)))).join('')) +
     tile('Recursos y actividades creados', sh.map((p,k)=>pv(p, fmt(o.a[p][0]), fmt(o.a[p][0]/P[p].days,1)+' por día', dd(k, o.a[sh[k-1]]?.[0]??0, o.a[p][0]))).join(''));
 }
 
