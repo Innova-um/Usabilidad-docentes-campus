@@ -54,6 +54,7 @@ out = tpl.replace("/*__DATA__*/null", js)
 # Documento HTML completo para abrirlo directo en el navegador
 out = ('<!doctype html>\n<html lang="es">\n<head>\n<meta charset="utf-8">\n'
        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+       '<meta name="robots" content="noindex, nofollow">\n'
        + out.replace("</style>\n", "</style>\n</head>\n<body>\n", 1) + "\n</body>\n</html>\n")
 open(os.path.join(os.path.dirname(HERE), "index.html"), "w", encoding="utf-8").write(out)
 print("ok", len(rows), len(courses), len(teachers), len(cats), d2, cut, len(out))
