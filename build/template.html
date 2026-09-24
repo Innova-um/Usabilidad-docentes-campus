@@ -259,7 +259,7 @@ const TK = D.teachers.map(t => norm(t[0]+' '+t[1]));
 const CK = D.courses.map(c => norm(c[0]+' '+c[1]));
 const facs = [...new Set(D.cats.map(c => c[0]))].sort((a,b)=>a.localeCompare(b,'es'));
 
-const S = { fac:'', prog:'', q:'', mode:'dia', sel:new Set(P.map((_,i)=>i)), view:'cur', sort:{cur:['m'+(NP-1),-1], doc:['m'+(NP-1),-1]}, page:0 };
+const S = { fac:'', prog:'', q:'', mode:'dia', sel:new Set(P.map((_,i)=>i).slice(-2)), view:'cur', sort:{cur:['m'+(NP-1),-1], doc:['m'+(NP-1),-1]}, page:0 };
 const shown = () => P.map((_,i)=>i).filter(i=>S.sel.has(i));
 
 // Header and notes
