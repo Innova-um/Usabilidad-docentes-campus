@@ -65,6 +65,22 @@ select:disabled{opacity:.55}
 .vs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:4px}
 .vs small{font-size:10.5px;color:var(--muted)}
 .field.fixed{flex:none}
+.dd{position:relative}
+.dd summary{list-style:none;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 34px 8px 10px;min-height:38px;cursor:pointer;position:relative;white-space:nowrap;overflow:hidden}
+.dd summary::-webkit-details-marker{display:none}
+.dd summary::after{content:"";position:absolute;right:13px;top:50%;width:7px;height:7px;border-right:2px solid var(--ink-2);border-bottom:2px solid var(--ink-2);transform:translateY(-70%) rotate(45deg);transition:transform .15s}
+.dd[open] summary{border-color:var(--brand)}
+.dd[open] summary::after{transform:translateY(-30%) rotate(-135deg)}
+.dd .sws{display:inline-flex;gap:3px;flex:none}
+.dd .st-txt{overflow:hidden;text-overflow:ellipsis}
+.ddp{position:absolute;z-index:20;left:0;right:0;min-width:240px;margin-top:6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 28px rgba(0,41,75,.14);padding:6px;display:grid;gap:2px}
+.opt{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;cursor:pointer}
+.opt:hover{background:var(--brand-50)}
+.opt input{accent-color:var(--brand);width:16px;height:16px;margin:0}
+.opt span{font-weight:500}
+.opt small{margin-left:auto;color:var(--muted);font-size:11.5px}
+.opt:has(input:disabled){cursor:default}
+.ddh{margin:4px 10px 6px;font-size:11.5px;color:var(--muted)}
 .pv{display:grid;gap:2px}
 .pv .lab{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
 .pv .val{font-size:26px;font-weight:700;color:var(--brand-900);line-height:1.1;letter-spacing:-.01em}
@@ -153,15 +169,12 @@ tbody tr:hover td{background:var(--brand-50)}
 
   <section class="filters" aria-label="Filtros">
     <div class="frow">
-      <div class="field fixed"><label>Periodos</label>
-        <div class="seg" role="group" aria-label="Qué periodos ver">
-          <button type="button" data-cmp="all" aria-pressed="true">Los 3 periodos</button>
-          <button type="button" data-cmp="two" aria-pressed="false">Comparar dos</button>
-          <button type="button" data-cmp="one" aria-pressed="false">Un periodo</button>
-        </div>
+      <div class="field"><label id="lPer">Periodos</label>
+        <details class="dd" id="perDD">
+          <summary aria-labelledby="lPer" id="perSum"></summary>
+          <div class="ddp" role="group" aria-label="Periodos a mostrar" id="perList"></div>
+        </details>
       </div>
-      <div class="field" id="wA" hidden><label for="pA" id="lA">Periodo</label><select id="pA"></select></div>
-      <div class="field" id="wB" hidden><label for="pB">Comparar con</label><select id="pB"></select></div>
       <div class="field fixed"><label>Medida</label>
         <div class="seg" role="group" aria-label="Forma de medir">
           <button type="button" id="mTot" aria-pressed="false">Total del periodo</button>
@@ -246,8 +259,8 @@ const TK = D.teachers.map(t => norm(t[0]+' '+t[1]));
 const CK = D.courses.map(c => norm(c[0]+' '+c[1]));
 const facs = [...new Set(D.cats.map(c => c[0]))].sort((a,b)=>a.localeCompare(b,'es'));
 
-const S = { fac:'', prog:'', q:'', mode:'dia', cmp:'all', a:NP-2, b:NP-1, view:'cur', sort:{cur:['m'+(NP-1),-1], doc:['m'+(NP-1),-1]}, page:0 };
-const shown = () => S.cmp==='all' ? P.map((_,i)=>i) : S.cmp==='one' ? [S.a] : [S.a, S.b];
+const S = { fac:'', prog:'', q:'', mode:'dia', sel:new Set(P.map((_,i)=>i)), view:'cur', sort:{cur:['m'+(NP-1),-1], doc:['m'+(NP-1),-1]}, page:0 };
+const shown = () => P.map((_,i)=>i).filter(i=>S.sel.has(i));
 
 // Header and notes
 $('#periods').innerHTML = P.map((p,i)=>`<div class="period">${sw(i)}<div><b>${esc(p.label)}</b><span>${fmt(p.days,1).replace(',0','')} días · ${esc(p.note)}</span></div></div>`).join('');
@@ -255,21 +268,22 @@ const partial = P.filter(p=>p.note.startsWith('corte'));
 $('#cutNote').innerHTML = partial.length ? partial.map(p=>`<b>El periodo ${esc(p.label)} está incompleto:</b> el informe tiene ${esc(p.note)}, así que cubre ${fmt(p.days,1)} días. Su ritmo diario se calcula con esa duración.`).join(' ') : '';
 if(!partial.length) $('#cutNote').hidden = true;
 
-// Period controls
-const opts = (sel, skip) => P.map((p,i)=> i===skip ? '' : `<option value="${i}"${i===sel?' selected':''}>${esc(p.label)}</option>`).join('');
+// Period multi-select (accordion)
+$('#perList').innerHTML = P.map((p,i)=>`<label class="opt"><input type="checkbox" id="per${i}" value="${i}" checked>${sw(i)}<span>${esc(p.label)}</span><small>${fmt(p.days,1).replace(',0','')} días</small></label>`).join('')
+  + '<p class="ddh">Marca uno o varios. La variación compara cada periodo con el anterior marcado.</p>';
 function syncPeriodUI(){
-  $$('[data-cmp]').forEach(b=>b.setAttribute('aria-pressed', b.dataset.cmp===S.cmp));
-  $('#wA').hidden = S.cmp==='all'; $('#wB').hidden = S.cmp!=='two';
-  $('#lA').textContent = S.cmp==='two' ? 'Periodo base' : 'Periodo';
-  if(S.cmp==='two' && S.a===S.b) S.b = S.a===NP-1 ? NP-2 : NP-1;
-  $('#pA').innerHTML = opts(S.a, -1);
-  $('#pB').innerHTML = opts(S.b, S.a);
   const sh = shown();
+  $('#perSum').innerHTML = `<span class="sws">${sh.map(p=>sw(p)).join('')}</span><span class="st-txt">${sh.length===NP ? 'Todos los periodos' : sh.map(p=>esc(P[p].label)).join(', ')}</span>`;
+  // Keep at least one period selected
+  P.forEach((_,i)=>{ const cb = $('#per'+i); cb.checked = S.sel.has(i); cb.disabled = S.sel.size===1 && S.sel.has(i); });
   $$('.lg').forEach(el => el.innerHTML = sh.map(p=>`<span>${sw(p)}${esc(P[p].label)}</span>`).join(''));
 }
-$$('[data-cmp]').forEach(b => b.onclick = ()=>{ S.cmp = b.dataset.cmp; fixSort(); syncPeriodUI(); render(); });
-$('#pA').onchange = e => { S.a = +e.target.value; fixSort(); syncPeriodUI(); render(); };
-$('#pB').onchange = e => { S.b = +e.target.value; fixSort(); syncPeriodUI(); render(); };
+$('#perList').addEventListener('change', e => {
+  const i = +e.target.value; e.target.checked ? S.sel.add(i) : S.sel.delete(i);
+  fixSort(); syncPeriodUI(); render();
+});
+document.addEventListener('click', e => { const dd = $('#perDD'); if(dd.open && !dd.contains(e.target)) dd.open = false; });
+document.addEventListener('keydown', e => { if(e.key==='Escape') $('#perDD').open = false; });
 function fixSort(){ const last = shown().at(-1); for(const v of ['cur','doc']){ const k = S.sort[v][0]; const m = k.match(/^[ma](\d)$/); if(m && !shown().includes(+m[1])) S.sort[v] = ['m'+last, -1]; } }
 
 // Filters

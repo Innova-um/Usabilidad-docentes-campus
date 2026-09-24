@@ -6,7 +6,7 @@ Dashboard interactivo que compara el uso del aula virtual (Moodle) por parte de 
 - **14 al 20 de septiembre de 2026** (7 días)
 - **21 al 24 de septiembre de 2026** (corte 24/09/2026 09:39, 3,4 días)
 
-Se pueden ver los tres periodos a la vez, comparar dos cualesquiera o ver uno solo.
+Un selector desplegable permite marcar uno, dos o los tres periodos.
 
 Abre `index.html` en el navegador. No necesita servidor.
 
